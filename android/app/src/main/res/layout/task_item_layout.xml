@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/task_item_container"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:gravity="center_vertical"
+    android:padding="8dp"
+    android:background="@drawable/task_item_background">
+
+    <ImageView
+        android:id="@+id/task_check_icon"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:layout_marginEnd="4dp"
+        android:src="@android:drawable/checkbox_off_background" />
+
+    <TextView
+        android:id="@+id/task_item_title"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:layout_marginStart="12dp"
+        android:text="Task Title"
+        android:textColor="#FFFFFF"
+        android:textSize="16sp"
+        android:maxLines="1"
+        android:ellipsize="end" />
+
+</LinearLayout>
