@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="widget_background">#1A1A2E</color> <!-- Dark Blue Background -->
+    <color name="widget_glass_background_light">#1A1A2E</color> 
+    <color name="widget_glass_background_dark">#1A1A2E</color>
+    
+    <color name="widget_text_primary">#FFFFFF</color> <!-- White -->
+    <color name="widget_text_secondary">#B0B0B0</color> <!-- Light Grey -->
+    <color name="widget_text_inverse">#000000</color>
+    
+    <color name="widget_accent">#00A36C</color> <!-- Emerald Green -->
+    <color name="widget_gold">#FFD700</color> <!-- Gold -->
+    <color name="widget_divider">#40FFFFFF</color> <!-- Light Divider -->
+</resources>

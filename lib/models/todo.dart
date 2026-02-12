@@ -3,12 +3,14 @@ class TodoTask {
   final String title;
   final bool isCompleted;
   final String date;
+  final String type; // 'todo', 'habit_quit', 'habit_acquire'
 
   TodoTask({
     this.id,
     required this.title,
     this.isCompleted = false,
     required this.date,
+    this.type = 'todo',
   });
 
   Map<String, dynamic> toMap() {
@@ -17,6 +19,7 @@ class TodoTask {
       'title': title,
       'isCompleted': isCompleted ? 1 : 0,
       'date': date,
+      'type': type,
     };
   }
 
@@ -26,6 +29,7 @@ class TodoTask {
       title: map['title'],
       isCompleted: map['isCompleted'] == 1,
       date: map['date'],
+      type: map['type'] ?? 'todo',
     );
   }
 }

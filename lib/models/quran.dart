@@ -36,4 +36,21 @@ class QuranProgress {
       ayah: map['ayah'] ?? 0,
     );
   }
+  QuranProgress copyWith({
+    int? id,
+    String? date,
+    int? juz,
+    String? surah,
+    int? page,
+    int? ayah,
+  }) {
+    return QuranProgress(
+      id: id ?? this.id,
+      date: date ?? this.date,
+      juz: juz ?? this.juz,
+      surah: surah ?? this.surah,
+      page: page ?? this.page,
+      ayah: ayah ?? this.ayah,
+    );
+  }
 }

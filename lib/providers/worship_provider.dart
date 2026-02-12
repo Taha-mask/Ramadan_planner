@@ -11,7 +11,12 @@ class WorshipProvider with ChangeNotifier {
   final NotificationService _notificationService = NotificationService();
 
   WorshipProvider() {
-    _notificationService.init();
+    _initNotifications();
+  }
+
+  Future<void> _initNotifications() async {
+    await _notificationService.init();
+    await _notificationService.requestPermissions();
   }
 
   final List<String> _faraidNames = ['فجر', 'ظهر (فرض)', 'عصر', 'مغرب', 'عشاء'];
@@ -56,6 +61,38 @@ class WorshipProvider with ChangeNotifier {
     if (_entries.isEmpty) return 0.0;
     int completed = _entries.where((e) => e.isCompleted).length;
     return completed / _entries.length;
+  }
+
+  WorshipEntry? get nextPrayer {
+    final now = DateTime.now();
+    final allowed = [..._faraidNames, 'تهجد'];
+    for (var e in _entries) {
+      if (allowed.contains(e.prayerName) &&
+          e.time != null &&
+          e.time!.isAfter(now)) {
+        return e;
+      }
+    }
+    return null;
+  }
+
+  WorshipEntry? get currentPrayer {
+    final now = DateTime.now();
+    WorshipEntry? last;
+    for (var e in _entries) {
+      if (e.time != null && e.time!.isBefore(now)) {
+        last = e;
+      } else if (e.time != null && e.time!.isAfter(now)) {
+        break;
+      }
+    }
+    return last;
+  }
+
+  Duration? get timeToNextPrayer {
+    final next = nextPrayer;
+    if (next?.time == null) return null;
+    return next!.time!.difference(DateTime.now());
   }
 
   Future<void> loadEntries(DateTime date) async {
@@ -104,30 +141,16 @@ class WorshipProvider with ChangeNotifier {
   }
 
   Future<void> _updateWidget() async {
+    // Generate schedule for Today to ensure widget is always current
     final now = DateTime.now();
-    WorshipEntry? next;
-    for (var e in _entries) {
-      if (e.time != null && e.time!.isAfter(now)) {
-        next = e;
-        break;
-      }
-    }
+    final faraid = _prayerService.getFaraidTimes(now);
+    final sunnah = _prayerService.getSunnahTimes(now);
+    final allTimes = {...faraid, ...sunnah};
 
-    if (next != null) {
-      await WidgetService.updateWidget(
-        nextPrayerName: next.prayerName,
-        nextPrayerTime: DateFormat('hh:mm a').format(next.time!),
-      );
-    } else if (_entries.isNotEmpty && _entries.first.time != null) {
-      await WidgetService.updateWidget(
-        nextPrayerName: _entries.first.prayerName,
-        nextPrayerTime: DateFormat('hh:mm a').format(_entries.first.time!),
-      );
-    }
+    await WidgetService.updatePrayerWidget(prayerTimes: allTimes);
   }
 
   Future<void> toggleWorship(int index) async {
-    // Note: This matches original logic. Assuming index matches _entries.
     if (index < 0 || index >= _entries.length) return;
     WorshipEntry entry = _entries[index];
     await _toggleEntry(entry);
@@ -146,17 +169,27 @@ class WorshipProvider with ChangeNotifier {
     if (index != -1) {
       _entries[index] = updated;
       notifyListeners();
+      await _updateWidget();
     }
   }
 
   Future<void> scheduleNotification(WorshipEntry entry) async {
     if (entry.time == null) return;
+
+    DateTime scheduledTime = entry.time!;
+    final now = DateTime.now();
+
+    // If the time has passed for today, schedule it for tomorrow
+    if (scheduledTime.isBefore(now)) {
+      scheduledTime = scheduledTime.add(const Duration(days: 1));
+    }
+
     int id = entry.prayerName.hashCode;
     await _notificationService.schedulePrayerNotification(
       id: id,
       title: 'حان وقت صلاة ${entry.prayerName}',
       body: 'تذكير بأداء صلاة ${entry.prayerName} في وقتها',
-      scheduledTime: entry.time!,
+      scheduledTime: scheduledTime,
     );
   }
 }

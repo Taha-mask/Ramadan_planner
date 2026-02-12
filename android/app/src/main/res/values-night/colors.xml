@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="widget_background">#1E1E1E</color>
+    <color name="widget_text_primary">#FFFFFF</color>
+    <color name="widget_text_secondary">#B0BEC5</color>
+    <color name="widget_accent">#34D399</color> <!-- Lighter Emerald -->
+    <color name="widget_divider">#424242</color>
+</resources>

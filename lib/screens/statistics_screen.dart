@@ -139,13 +139,6 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
         ),
         const SizedBox(height: 12),
         _buildStatCard(
-          'متوسط الإنجاز اليومي',
-          '${(stats.last30DaysAverage * 100).toInt()}%',
-          Icons.analytics_outlined,
-          Colors.blueAccent,
-        ),
-        const SizedBox(height: 12),
-        _buildStatCard(
           'سلسلة الإنجاز (Streak)',
           '${stats.currentStreak} يوم',
           Icons.local_fire_department_rounded,
@@ -288,9 +281,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
         final completedTasks = tasksList.where((t) => t.isCompleted).length;
         final totalTasks = tasksList.length;
 
-        // Assessment
         final hasAssessment = entry.assessment != null;
-        final rating = hasAssessment ? entry.assessment!.rating : 0.0;
         final hasDua = hasAssessment && entry.assessment!.dua.isNotEmpty;
         final notes = hasAssessment ? entry.assessment!.notes : '';
 
@@ -351,14 +342,14 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
                     _buildMiniStat('المهام', '$completedTasks/$totalTasks'),
-                    _buildMiniStat('التقييم', '${rating.toInt()}/10'),
                     _buildMiniStat('الأذكار', '${entry.azkar.length}'),
                   ],
                 ),
                 if (hasDua ||
                     notes.isNotEmpty ||
                     prayerCount > 0 ||
-                    totalTasks > 0) ...[
+                    totalTasks > 0 ||
+                    entry.quran.isNotEmpty) ...[
                   const Divider(height: 30),
                   if (prayerCount > 0) ...[
                     const Text(
@@ -441,6 +432,73 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
                     ),
                     const SizedBox(height: 12),
                   ],
+                  if (entry.quran.isNotEmpty) ...[
+                    const Divider(height: 20, indent: 20, endIndent: 20),
+                    const Text(
+                      'الورد القرآني:',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.grey,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    ...entry.quran.map(
+                      (q) => Container(
+                        width: double.infinity,
+                        margin: const EdgeInsets.only(bottom: 8),
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: AppTheme.secondaryTeal.withOpacity(0.05),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: AppTheme.secondaryTeal.withOpacity(0.1),
+                          ),
+                        ),
+                        child: Row(
+                          children: [
+                            const Icon(
+                              Icons.menu_book_rounded,
+                              size: 18,
+                              color: AppTheme.secondaryTeal,
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Text(
+                                'سورة ${q.surah} - آية ${q.ayah}',
+                                style: const TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.bold,
+                                  color: AppTheme.deepIndigo,
+                                ),
+                              ),
+                            ),
+                            if (q.juz > 0)
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 4,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: AppTheme.secondaryTeal.withOpacity(
+                                    0.1,
+                                  ),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Text(
+                                  'جزء ${q.juz}',
+                                  style: const TextStyle(
+                                    fontSize: 10,
+                                    color: AppTheme.secondaryTeal,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
                   if (hasDua) ...[
                     const Divider(height: 20, indent: 20, endIndent: 20),
                     _buildReflectionBox(
@@ -522,26 +580,6 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
         ),
         Text(label, style: const TextStyle(color: Colors.grey, fontSize: 12)),
       ],
-    );
-  }
-
-  Widget _buildDetailRow(IconData icon, String text) {
-    return Padding(
-      padding: const EdgeInsets.only(top: 4),
-      child: Row(
-        children: [
-          Icon(icon, size: 14, color: AppTheme.primaryEmerald),
-          const SizedBox(width: 6),
-          Text(
-            text,
-            style: TextStyle(
-              fontSize: 12,
-              color: AppTheme.primaryEmerald.withOpacity(0.8),
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ],
-      ),
     );
   }
 }

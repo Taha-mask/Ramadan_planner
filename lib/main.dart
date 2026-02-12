@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'theme/app_theme.dart';
 import 'screens/main_scaffold.dart';
@@ -13,9 +14,16 @@ import 'providers/todo_provider.dart';
 import 'providers/assessment_provider.dart';
 import 'providers/statistics_provider.dart';
 import 'providers/theme_provider.dart';
+import 'services/widget_service.dart';
+import 'services/notification_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  await SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp,
+    DeviceOrientation.portraitDown,
+  ]);
 
   if (Platform.isWindows || Platform.isLinux) {
     sqfliteFfiInit();
@@ -24,6 +32,9 @@ void main() async {
 
   await tryInitializeDateFormatting();
   Intl.defaultLocale = 'ar';
+
+  // Initialize HomeWidget
+  await WidgetService.init();
 
   runApp(
     MultiProvider(
@@ -38,6 +49,21 @@ void main() async {
       child: const RamadanPlanner(),
     ),
   );
+
+  // Schedule initial widget updates after valid context is available or just use service
+  // We can't access Provider here easily without context, but we can rely on Home Screen init.
+
+  // Initialize Widgets
+  WidgetsBinding.instance.addPostFrameCallback((_) async {
+    // Initial Zikr
+    await WidgetService.updateZikrWidget();
+
+    // Notifications Verification
+    final notificationService = NotificationService();
+    await notificationService.init();
+    await notificationService.requestPermissions();
+    await notificationService.scheduleProphetPrayerReminder();
+  });
 }
 
 Future<void> tryInitializeDateFormatting() async {

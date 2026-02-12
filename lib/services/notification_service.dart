@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/data/latest_all.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
@@ -24,15 +25,56 @@ class NotificationService {
       settings: initializationSettings,
       onDidReceiveNotificationResponse:
           (NotificationResponse notificationResponse) async {
-            // Handle notification tap
+            if (notificationResponse.actionId == 'mark_as_prayed') {
+              await showFollowUpNotification(
+                notificationResponse.payload ?? 'الصلاة',
+              );
+            }
           },
+    );
+
+    // Create channels
+    final AndroidFlutterLocalNotificationsPlugin? androidImplementation =
+        _flutterLocalNotificationsPlugin
+            .resolvePlatformSpecificImplementation<
+              AndroidFlutterLocalNotificationsPlugin
+            >();
+
+    await androidImplementation?.createNotificationChannel(
+      const AndroidNotificationChannel(
+        'prayer_channel',
+        'Prayer Notifications',
+        description: 'Notifications for prayer times',
+        importance: Importance.max,
+        playSound: true,
+      ),
     );
   }
 
   Future<bool> requestPermissions() async {
-    if (await Permission.notification.isGranted) return true;
-    final status = await Permission.notification.request();
-    return status.isGranted;
+    bool granted = false;
+
+    // Check if Android 13+
+    final AndroidFlutterLocalNotificationsPlugin? androidImplementation =
+        _flutterLocalNotificationsPlugin
+            .resolvePlatformSpecificImplementation<
+              AndroidFlutterLocalNotificationsPlugin
+            >();
+
+    if (androidImplementation != null) {
+      granted =
+          await androidImplementation.requestNotificationsPermission() ?? false;
+    } else {
+      // Fallback for older Android versions
+      granted = await Permission.notification.request().isGranted;
+    }
+
+    // Also request exact alarm permission
+    if (await Permission.scheduleExactAlarm.isDenied) {
+      await Permission.scheduleExactAlarm.request();
+    }
+
+    return granted;
   }
 
   Future<void> schedulePrayerNotification({
@@ -59,6 +101,14 @@ class NotificationService {
             channelDescription: 'Notifications for prayer times',
             importance: Importance.max,
             priority: Priority.high,
+            actions: <AndroidNotificationAction>[
+              AndroidNotificationAction(
+                'mark_as_prayed',
+                'صليت ✅',
+                showsUserInterface: true,
+                cancelNotification: true,
+              ),
+            ],
           ),
         ),
         androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
@@ -86,6 +136,102 @@ class NotificationService {
         rethrow;
       }
     }
+  }
+
+  Future<void> showFollowUpNotification(String prayerName) async {
+    const androidDetails = AndroidNotificationDetails(
+      'followup_channel',
+      'Follow-up Suggestions',
+      channelDescription: 'Suggestions for Sunnah and Azkar after prayer',
+      importance: Importance.defaultImportance,
+      priority: Priority.defaultPriority,
+    );
+
+    await _flutterLocalNotificationsPlugin.show(
+      id: 888,
+      title: 'تقبل الله صلاتك',
+      body: 'لا تنسَ أذكار بعد $prayerName والسنن الرواتب ✨',
+      notificationDetails: NotificationDetails(android: androidDetails),
+    );
+  }
+
+  Future<void> schedulePeriodicZikr({
+    required int id,
+    required String title,
+    required String body,
+    RepeatInterval interval = RepeatInterval.hourly,
+  }) async {
+    await _flutterLocalNotificationsPlugin.periodicallyShow(
+      id: id,
+      title: title,
+      body: body,
+      repeatInterval: interval,
+      notificationDetails: const NotificationDetails(
+        android: AndroidNotificationDetails(
+          'zikr_channel',
+          'Zikr Reminders',
+          channelDescription: 'Periodic reminders for zikr',
+          importance: Importance.low,
+          priority: Priority.low,
+        ),
+      ),
+      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+    );
+  }
+
+  Future<void> scheduleProphetPrayerReminder({
+    RepeatInterval interval = RepeatInterval.everyMinute,
+  }) async {
+    await _flutterLocalNotificationsPlugin.periodicallyShow(
+      id: 777,
+      title: 'تذكير',
+      body: 'صلِ على النبي ﷺ',
+      repeatInterval: interval,
+      notificationDetails: const NotificationDetails(
+        android: AndroidNotificationDetails(
+          'zikr_channel',
+          'Zikr Reminders',
+          channelDescription: 'Periodic reminders for zikr',
+          importance: Importance.high,
+          priority: Priority.high,
+        ),
+      ),
+      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+    );
+  }
+
+  Future<void> scheduleQuranReminder({required TimeOfDay time}) async {
+    final now = DateTime.now();
+    var scheduledDate = DateTime(
+      now.year,
+      now.month,
+      now.day,
+      time.hour,
+      time.minute,
+    );
+
+    if (scheduledDate.isBefore(now)) {
+      scheduledDate = scheduledDate.add(const Duration(days: 1));
+    }
+
+    await _flutterLocalNotificationsPlugin.zonedSchedule(
+      id: 8888, // Quran Reminder ID
+      title: 'ورد القرآن اليومي',
+      body: 'حان موعد قراءة وردك اليومي من القرآن الكريم 📖',
+      scheduledDate: tz.TZDateTime.from(scheduledDate, tz.local),
+      notificationDetails: const NotificationDetails(
+        android: AndroidNotificationDetails(
+          'quran_channel',
+          'Quran Reminders',
+          channelDescription: 'Daily reminder to read Quran',
+          importance: Importance.high,
+          priority: Priority.high,
+        ),
+      ),
+      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+      matchDateTimeComponents:
+          DateTimeComponents.time, // Repeats daily at this time
+    );
   }
 
   Future<void> cancelNotification(int id) async {

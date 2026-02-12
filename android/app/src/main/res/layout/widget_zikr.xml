@@ -1,0 +1,65 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/widget_background"
+    android:padding="12dp">
+
+    <!-- Header -->
+    <TextView
+        android:id="@+id/tv_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:text="ذكر اليوم"
+        android:textColor="@color/widget_text_secondary"
+        android:textSize="14sp"
+        android:fontFamily="sans-serif-medium"/>
+
+    <!-- Content -->
+    <TextView
+        android:id="@+id/tv_zikr_content"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:gravity="center"
+        android:text="سبحان الله وبحمده"
+        android:textColor="@color/widget_text_primary"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:fontFamily="serif"
+        android:paddingStart="8dp"
+        android:paddingEnd="8dp"/>
+
+    <!-- Action Buttons (Bottom) -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:orientation="horizontal"
+        android:gravity="center">
+
+        <!-- Copy -->
+        <ImageButton
+            android:id="@+id/btn_copy"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:src="@android:drawable/ic_menu_save" 
+            android:background="?android:attr/selectableItemBackgroundBorderless"
+            android:tint="@color/widget_text_secondary"
+            android:contentDescription="Copy"
+            android:layout_marginEnd="32dp"/>
+
+        <!-- Next -->
+        <ImageButton
+            android:id="@+id/btn_next"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:src="@android:drawable/ic_media_next"
+            android:background="?android:attr/selectableItemBackgroundBorderless"
+            android:tint="@color/widget_accent"
+            android:contentDescription="Next"/>
+
+    </LinearLayout>
+
+</RelativeLayout>

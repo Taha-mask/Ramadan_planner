@@ -1,30 +1,43 @@
-<?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/task_item_container"
+    android:id="@+id/item_container"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="horizontal"
     android:gravity="center_vertical"
-    android:padding="8dp"
-    android:background="@drawable/task_item_background">
+    android:background="@drawable/task_item_background"
+    android:padding="8dp">
 
     <ImageView
-        android:id="@+id/task_check_icon"
-        android:layout_width="24dp"
-        android:layout_height="24dp"
-        android:layout_marginEnd="4dp"
-        android:src="@android:drawable/checkbox_off_background" />
+        android:id="@+id/iv_checkmark"
+        android:layout_width="20dp"
+        android:layout_height="20dp"
+        android:src="@android:drawable/checkbox_off_background"
+        android:tint="@color/widget_accent"
+        android:layout_marginEnd="12dp"/>
 
-    <TextView
-        android:id="@+id/task_item_title"
+    <LinearLayout
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight="1"
-        android:layout_marginStart="12dp"
-        android:text="Task Title"
-        android:textColor="#FFFFFF"
-        android:textSize="16sp"
-        android:maxLines="1"
-        android:ellipsize="end" />
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/tv_task_title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Task Title"
+            android:textColor="@color/widget_text_primary"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:fontFamily="sans-serif"/>
+
+        <TextView
+            android:id="@+id/tv_task_type"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Type"
+            android:textColor="@color/widget_text_secondary"
+            android:textSize="10sp"/>
+    </LinearLayout>
 
 </LinearLayout>

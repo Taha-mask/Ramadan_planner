@@ -1,14 +1,29 @@
 import 'package:adhan/adhan.dart';
 import 'package:intl/intl.dart';
+import 'package:flutter/foundation.dart';
+import 'location_service.dart';
 
 class PrayerService {
+  // Cairo Coordinates (Default)
   // Cairo Coordinates (Default)
   static const double _defaultLat = 30.0444;
   static const double _defaultLong = 31.2357;
 
   Coordinates _coordinates = Coordinates(_defaultLat, _defaultLong);
 
-  // Update coordinates if we implement GPS later
+  // Update coordinates from LocationService
+  Future<void> initLocation() async {
+    try {
+      final position = await LocationService().determinePosition();
+      if (position != null) {
+        _coordinates = Coordinates(position.latitude, position.longitude);
+      }
+    } catch (e) {
+      debugPrint("Error initializing location: $e");
+    }
+  }
+
+  // Update coordinates manually if we implement GPS later
   void updateCoordinates(double lat, double long) {
     _coordinates = Coordinates(lat, long);
   }

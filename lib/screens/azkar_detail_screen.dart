@@ -22,7 +22,9 @@ class _AzkarDetailScreenState extends State<AzkarDetailScreen> {
     // Load data from AzkarData and initialize 'current' progress
     final source = widget.type == 'Morning'
         ? AzkarData.morningAzkar
-        : AzkarData.eveningAzkar;
+        : widget.type == 'Evening'
+        ? AzkarData.eveningAzkar
+        : AzkarData.postPrayerAzkar;
 
     _azkar = source.map((item) => {...item, 'current': 0}).toList();
   }
@@ -30,10 +32,7 @@ class _AzkarDetailScreenState extends State<AzkarDetailScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.type == 'Morning' ? 'أذكار الصباح' : 'أذكار المساء'),
-        elevation: 0,
-      ),
+      appBar: AppBar(title: Text(_getTitle()), elevation: 0),
       body: ListView.builder(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
         itemCount: _azkar.length,
@@ -162,5 +161,18 @@ class _AzkarDetailScreenState extends State<AzkarDetailScreen> {
         },
       ),
     );
+  }
+
+  String _getTitle() {
+    switch (widget.type) {
+      case 'Morning':
+        return 'أذكار الصباح';
+      case 'Evening':
+        return 'أذكار المساء';
+      case 'PostPrayer':
+        return 'أذكار ما بعد الصلاة';
+      default:
+        return 'الأذكار';
+    }
   }
 }

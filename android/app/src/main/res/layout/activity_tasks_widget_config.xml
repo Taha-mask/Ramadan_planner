@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp"
+    android:gravity="center">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="اختر نوع المهام للعرض"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="16dp"/>
+
+    <RadioGroup
+        android:id="@+id/radio_group_filter"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="24dp">
+        
+        <RadioButton
+            android:id="@+id/option_all"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="الكل (مهام وعادات)"
+            android:checked="true"/>
+            
+        <RadioButton
+            android:id="@+id/option_todos"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="قائمة المهام فقط"/>
+
+        <RadioButton
+            android:id="@+id/option_habits"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="العادات فقط"/>
+    </RadioGroup>
+
+    <Button
+        android:id="@+id/btn_save_config"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="حفظ وإضافة"
+        android:backgroundTint="@color/widget_accent"/>
+
+</LinearLayout>

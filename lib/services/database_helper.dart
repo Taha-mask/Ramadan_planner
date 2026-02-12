@@ -23,7 +23,7 @@ class DatabaseHelper {
     String path = join(await getDatabasesPath(), 'ramadan_planner.db');
     return await openDatabase(
       path,
-      version: 4,
+      version: 5,
       onCreate: _onCreate,
       onUpgrade: _onUpgrade,
     );
@@ -72,6 +72,10 @@ class DatabaseHelper {
         )
       ''');
     }
+    if (oldVersion < 5) {
+      // Add type to todos
+      await db.execute("ALTER TABLE todos ADD COLUMN type TEXT DEFAULT 'todo'");
+    }
   }
 
   Future _onCreate(Database db, int version) async {
@@ -100,7 +104,8 @@ class DatabaseHelper {
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         title TEXT,
         isCompleted INTEGER,
-        date TEXT
+        date TEXT,
+        type TEXT
       )
     ''');
 
@@ -208,7 +213,11 @@ class DatabaseHelper {
   }
 
   // Generic methods for Azkar Stats
-  Future<void> incrementAzkarCount(String date, String text) async {
+  Future<void> incrementAzkarCount(
+    String date,
+    String text, {
+    int count = 1,
+  }) async {
     Database db = await database;
     final List<Map<String, dynamic>> maps = await db.query(
       'azkar_stats',
@@ -220,13 +229,13 @@ class DatabaseHelper {
       await db.insert('azkar_stats', {
         'date': date,
         'zikrText': text,
-        'count': 1,
+        'count': count,
       });
     } else {
       int currentCount = maps.first['count'];
       await db.update(
         'azkar_stats',
-        {'count': currentCount + 1},
+        {'count': currentCount + count},
         where: 'id = ?',
         whereArgs: [maps.first['id']],
       );

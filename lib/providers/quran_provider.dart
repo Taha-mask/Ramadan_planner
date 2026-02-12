@@ -35,8 +35,8 @@ class QuranProvider with ChangeNotifier {
       ayah: ayah,
     );
 
-    await DatabaseHelper().insertQuranProgress(newProgress);
-    _current = newProgress;
+    int id = await DatabaseHelper().insertQuranProgress(newProgress);
+    _current = newProgress.copyWith(id: id);
     notifyListeners();
   }
 }

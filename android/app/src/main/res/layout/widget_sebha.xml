@@ -1,0 +1,62 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/widget_background"
+    android:padding="16dp">
+
+    <!-- Header -->
+    <TextView
+        android:id="@+id/tv_sebha_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:text="التسبيح اليومي"
+        android:textColor="@color/widget_text_secondary"
+        android:textSize="14sp"
+        android:fontFamily="sans-serif-medium"/>
+
+    <!-- Count Display (Center) -->
+    <TextView
+        android:id="@+id/tv_counter"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:text="0"
+        android:textColor="@color/widget_accent"
+        android:textSize="48sp"
+        android:textStyle="bold"
+        android:fontFamily="monospace"/>
+
+
+
+    <!-- Clickable Area (Invisible Full Screen minus buttons) -->
+    <LinearLayout
+        android:id="@+id/btn_increment"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"/>
+
+    <!-- Reset Button (Bottom Right) -->
+    <ImageButton
+        android:id="@+id/btn_reset"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentEnd="true"
+        android:src="@android:drawable/ic_menu_revert"
+        android:background="?android:attr/selectableItemBackgroundBorderless"
+        android:tint="@color/widget_text_secondary"
+        android:contentDescription="Reset"/>
+
+    <!-- Tap Hint (Bottom Center) -->
+    <ImageView
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:src="@drawable/ic_fingerprint"
+        android:tint="@color/widget_gold"
+        android:alpha="0.7"/>
+
+</RelativeLayout>

@@ -1,10 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import '../services/database_helper.dart';
 import '../models/daily_entry.dart';
 import '../services/analytics_service.dart';
+import '../services/daily_zikr_service.dart';
+import '../services/notification_service.dart';
+import '../services/widget_service.dart';
 
 class HistoryProvider with ChangeNotifier {
+  final NotificationService _notificationService = NotificationService();
   List<Map<String, dynamic>> _prayerStats = [];
   List<Map<String, dynamic>> _assessmentStats = [];
   List<Map<String, dynamic>> _azkarStats = [];
@@ -27,6 +32,11 @@ class HistoryProvider with ChangeNotifier {
   int get totalPrayers30Days => _totalPrayers30Days;
   int get totalTasks30Days => _totalTasks30Days;
 
+  String get dailyZikr => DailyZikrService.getDailyZikr();
+
+  double _dailyScore = 0.0;
+  double get dailyScore => _dailyScore;
+
   Future<void> refreshStats() async {
     final db = DatabaseHelper();
 
@@ -38,16 +48,32 @@ class HistoryProvider with ChangeNotifier {
 
     await _loadHistory();
     _runAnalytics();
+    _calculateDailyScore();
+
+    await _scheduleDailyZikrReminder();
+    await _syncWidgetData();
 
     notifyListeners();
   }
 
+  Future<void> _syncWidgetData() async {
+    await WidgetService.updateZikrWidget();
+  }
+
+  Future<void> _scheduleDailyZikrReminder() async {
+    // For simplicity, every hour.
+    await _notificationService.schedulePeriodicZikr(
+      id: 999,
+      title: 'ذكر اليوم',
+      body: dailyZikr,
+      interval: RepeatInterval.hourly,
+    );
+  }
+
   Future<void> _loadHistory() async {
     final db = DatabaseHelper();
-    // Use local list to prevent race conditions causing duplicates
     List<DailyEntry> tempHistory = [];
 
-    // Get last 30 days of data
     for (int i = 0; i < 30; i++) {
       String date = DateFormat(
         'yyyy-MM-dd',
@@ -59,7 +85,6 @@ class HistoryProvider with ChangeNotifier {
       final assessment = await db.getAssessmentByDate(date);
       final azkar = await db.getAzkarStatsListByDate(date);
 
-      // Include the day if there is ANY type of data recorded
       if (prayers.isEmpty &&
           quran.isEmpty &&
           tasks.isEmpty &&
@@ -90,14 +115,12 @@ class HistoryProvider with ChangeNotifier {
       'تهجد',
     );
 
-    // Calculate current streak (days with ANY data recorded starting from yesterday/today)
     _currentStreak = 0;
     String today = DateFormat('yyyy-MM-dd').format(DateTime.now());
     String yesterday = DateFormat(
       'yyyy-MM-dd',
     ).format(DateTime.now().subtract(const Duration(days: 1)));
 
-    // Find the starting point for streak (either today or yesterday)
     int startIndex = _history.indexWhere((e) => e.date == today);
     if (startIndex == -1) {
       startIndex = _history.indexWhere((e) => e.date == yesterday);
@@ -105,8 +128,6 @@ class HistoryProvider with ChangeNotifier {
 
     if (startIndex != -1) {
       for (int i = startIndex; i < _history.length; i++) {
-        // Since history is ordered by date descending by default in the loop,
-        // we need to ensure they are consecutive.
         if (i == startIndex) {
           _currentStreak++;
           continue;
@@ -123,7 +144,6 @@ class HistoryProvider with ChangeNotifier {
       }
     }
 
-    // Calculate 30-day averages
     _totalPrayers30Days = 0;
     _totalTasks30Days = 0;
     double totalCompletionRatio = 0.0;
@@ -135,7 +155,6 @@ class HistoryProvider with ChangeNotifier {
       _totalPrayers30Days += prayers;
       _totalTasks30Days += tasks;
 
-      // Completion ratio = (Completed Prayers / 12) * 0.7 + (Completed Tasks / Total Tasks) * 0.3
       double prayerRatio = prayers / 12.0;
       double taskRatio = entry.tasks.isEmpty ? 1.0 : tasks / entry.tasks.length;
       totalCompletionRatio += (prayerRatio * 0.7 + taskRatio * 0.3);
@@ -146,9 +165,64 @@ class HistoryProvider with ChangeNotifier {
         : totalCompletionRatio / _history.length;
   }
 
-  Future<void> logZikr(String text) async {
+  Future<void> logZikr(String text, {int count = 1}) async {
     String today = DateFormat('yyyy-MM-dd').format(DateTime.now());
-    await DatabaseHelper().incrementAzkarCount(today, text);
+    await DatabaseHelper().incrementAzkarCount(today, text, count: count);
     await refreshStats();
+  }
+
+  void _calculateDailyScore() {
+    // Look for today's entry in history
+    String today = DateFormat('yyyy-MM-dd').format(DateTime.now());
+    final index = _history.indexWhere((e) => e.date == today);
+    if (index == -1) {
+      _dailyScore = 0.0;
+      return;
+    }
+
+    final entry = _history[index];
+
+    // 50% Faraid (5 prayers)
+    double faraidScore =
+        entry.prayers
+            .where(
+              (p) =>
+                  p.isCompleted &&
+                  !p.prayerName.contains('سنة') &&
+                  p.prayerName != 'تهجد' &&
+                  p.prayerName != 'صبح' &&
+                  p.prayerName != 'ضحى',
+            )
+            .length /
+        5.0;
+
+    // 20% Sunnah (approx 7 common sunnahs)
+    double sunnahScore =
+        entry.prayers
+            .where(
+              (p) =>
+                  p.isCompleted &&
+                  (p.prayerName.contains('سنة') ||
+                      ['تهجد', 'صبح', 'ضحى'].contains(p.prayerName)),
+            )
+            .length /
+        7.0;
+
+    // 20% Quran & Tasks
+    double taskScore = entry.tasks.isEmpty
+        ? 1.0
+        : entry.tasks.where((t) => t.isCompleted).length /
+              entry.tasks.length.toDouble();
+
+    // 10% Azkar (Threshold of 100 total counts)
+    int totalAzkarCount = entry.azkar.fold(0, (sum, item) => sum + item.count);
+    double azkarScore = (totalAzkarCount / 100.0).clamp(0.0, 1.0);
+
+    _dailyScore =
+        (faraidScore * 0.5 +
+                sunnahScore * 0.2 +
+                taskScore * 0.2 +
+                azkarScore * 0.1)
+            .clamp(0.0, 1.0);
   }
 }

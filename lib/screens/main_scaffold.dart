@@ -3,6 +3,7 @@ import 'home_screen.dart';
 import 'quran_azkar_screen.dart';
 import 'plan_reflect_screen.dart';
 import 'statistics_screen.dart';
+import 'lessons_screen.dart';
 
 import '../services/notification_service.dart';
 
@@ -31,6 +32,7 @@ class _MainScaffoldState extends State<MainScaffold> {
     const QuranAzkarScreen(),
     const PlanReflectScreen(),
     const StatisticsScreen(),
+    const LessonsScreen(),
   ];
 
   @override
@@ -80,7 +82,13 @@ class _MainScaffoldState extends State<MainScaffold> {
               activeIcon: Icon(Icons.history),
               label: 'التاريخ',
             ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.video_library_outlined),
+              activeIcon: Icon(Icons.video_library_rounded),
+              label: 'الدروس',
+            ),
           ],
+          type: BottomNavigationBarType.fixed,
         ),
       ),
     );
