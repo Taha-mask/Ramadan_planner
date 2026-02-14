@@ -12,20 +12,40 @@ import android.view.View
 import android.graphics.Color
 
 class PrayerWidgetProvider : HomeWidgetProvider() {
+    private fun getSafeString(prefs: SharedPreferences, key: String, default: String): String {
+        return try {
+            prefs.getString(key, default) ?: default
+        } catch (e: Exception) {
+            prefs.all[key]?.toString() ?: default
+        }
+    }
+
+    private fun getSafeLong(prefs: SharedPreferences, key: String, default: Long): Long {
+        return try {
+            prefs.getLong(key, default)
+        } catch (e: Exception) {
+            try {
+                prefs.getInt(key, default.toInt()).toLong()
+            } catch (e2: Exception) {
+                prefs.all[key]?.toString()?.toLongOrNull() ?: default
+            }
+        }
+    }
+
     override fun onUpdate(context: Context, appWidgetManager: AppWidgetManager, appWidgetIds: IntArray, widgetData: SharedPreferences) {
         appWidgetIds.forEach { widgetId ->
             val views = RemoteViews(context.packageName, R.layout.widget_prayer)
             
             // 1. Get Data
-            var nextPrayerName = widgetData.getString("next_prayer_name", "--")
+            var nextPrayerName = getSafeString(widgetData, "next_prayer_name", "--")
             // Map "Dhuhr (Fard)" to "Dhuhr" if needed
             if (nextPrayerName == "ظهر (فرض)") nextPrayerName = "ظهر"
             
-            val nextPrayerTime = widgetData.getString("next_prayer_time", "--:--")
-            val nextPrayerMillis = widgetData.getLong("next_prayer_millis", 0L)
+            val nextPrayerTime = getSafeString(widgetData, "next_prayer_time", "--:--")
+            val nextPrayerMillis = getSafeLong(widgetData, "next_prayer_millis", 0L)
             
-            val hijriDate = widgetData.getString("hijri_date", "")
-            val location = widgetData.getString("location", "حدد موقعك")
+            val hijriDate = getSafeString(widgetData, "hijri_date", "")
+            val location = getSafeString(widgetData, "location", "حدد موقعك")
 
             // 2. Format Date (Gregorian + Hijri)
             val now = System.currentTimeMillis()

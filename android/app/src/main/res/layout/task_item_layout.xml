@@ -9,17 +9,20 @@
 
     <ImageView
         android:id="@+id/iv_checkmark"
-        android:layout_width="20dp"
-        android:layout_height="20dp"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:padding="8dp"
         android:src="@android:drawable/checkbox_off_background"
         android:tint="@color/widget_accent"
-        android:layout_marginEnd="12dp"/>
+        android:layout_marginEnd="4dp"/>
 
     <LinearLayout
+        android:id="@+id/text_container"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight="1"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:paddingVertical="4dp">
 
         <TextView
             android:id="@+id/tv_task_title"

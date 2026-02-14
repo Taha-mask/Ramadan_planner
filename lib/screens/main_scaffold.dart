@@ -31,8 +31,8 @@ class _MainScaffoldState extends State<MainScaffold> {
     const HomeScreen(),
     const QuranAzkarScreen(),
     const PlanReflectScreen(),
-    const StatisticsScreen(),
     const LessonsScreen(),
+    const StatisticsScreen(),
   ];
 
   @override
@@ -43,7 +43,7 @@ class _MainScaffoldState extends State<MainScaffold> {
         decoration: BoxDecoration(
           border: Border(
             top: BorderSide(
-              color: Theme.of(context).dividerColor.withOpacity(0.1),
+              color: Theme.of(context).dividerColor.withValues(alpha: 0.1),
               width: 1,
             ),
           ),
@@ -77,17 +77,19 @@ class _MainScaffoldState extends State<MainScaffold> {
               activeIcon: Icon(Icons.assignment),
               label: 'المهام',
             ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.history_outlined),
-              activeIcon: Icon(Icons.history),
-              label: 'التاريخ',
-            ),
+      
             BottomNavigationBarItem(
               icon: Icon(Icons.video_library_outlined),
               activeIcon: Icon(Icons.video_library_rounded),
               label: 'الدروس',
             ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.history_outlined),
+              activeIcon: Icon(Icons.history),
+              label: 'التاريخ',
+            ),
           ],
+          
           type: BottomNavigationBarType.fixed,
         ),
       ),

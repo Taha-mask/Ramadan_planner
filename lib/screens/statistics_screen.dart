@@ -96,7 +96,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
           Icon(
             Icons.history_toggle_off_rounded,
             size: 80,
-            color: AppTheme.primaryEmerald.withOpacity(0.2),
+            color: AppTheme.primaryEmerald.withValues(alpha: 0.2),
           ),
           const SizedBox(height: 20),
           Text(
@@ -104,7 +104,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
             style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,
-              color: AppTheme.deepIndigo.withOpacity(0.5),
+              color: AppTheme.deepIndigo.withValues(alpha: 0.5),
             ),
           ),
           const SizedBox(height: 10),
@@ -158,7 +158,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
       elevation: 0,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20),
-        side: BorderSide(color: color.withOpacity(0.1), width: 1),
+        side: BorderSide(color: color.withValues(alpha: 0.1), width: 1),
       ),
       child: Padding(
         padding: const EdgeInsets.all(20),
@@ -167,7 +167,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: color.withOpacity(0.1),
+                color: color.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
               child: Icon(icon, color: color, size: 28),
@@ -226,7 +226,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
         const SizedBox(width: 12),
         Container(
           decoration: BoxDecoration(
-            color: AppTheme.primaryEmerald.withOpacity(0.1),
+            color: AppTheme.primaryEmerald.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(16),
           ),
           child: IconButton(
@@ -300,7 +300,10 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
           elevation: 0,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(24),
-            side: BorderSide(color: statusColor.withOpacity(0.2), width: 1.5),
+            side: BorderSide(
+              color: statusColor.withValues(alpha: 0.2),
+              width: 1.5,
+            ),
           ),
           child: Padding(
             padding: const EdgeInsets.all(20),
@@ -323,14 +326,14 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
                         vertical: 4,
                       ),
                       decoration: BoxDecoration(
-                        color: statusColor.withOpacity(0.1),
+                        color: statusColor.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: Text(
                         '$prayerCount صلاة',
                         style: TextStyle(
                           color: statusColor,
-                          fontWeight: FontWeight.bold,
+                          fontWeight: FontWeight.w900,
                           fontSize: 12,
                         ),
                       ),
@@ -372,7 +375,9 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
                                 vertical: 2,
                               ),
                               decoration: BoxDecoration(
-                                color: AppTheme.primaryEmerald.withOpacity(0.1),
+                                color: AppTheme.primaryEmerald.withValues(
+                                  alpha: 0.1,
+                                ),
                                 borderRadius: BorderRadius.circular(4),
                               ),
                               child: Text(
@@ -449,10 +454,12 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
                         margin: const EdgeInsets.only(bottom: 8),
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
-                          color: AppTheme.secondaryTeal.withOpacity(0.05),
+                          color: AppTheme.secondaryTeal.withValues(alpha: 0.05),
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(
-                            color: AppTheme.secondaryTeal.withOpacity(0.1),
+                            color: AppTheme.secondaryTeal.withValues(
+                              alpha: 0.1,
+                            ),
                           ),
                         ),
                         child: Row(
@@ -466,10 +473,12 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
                             Expanded(
                               child: Text(
                                 'سورة ${q.surah} - آية ${q.ayah}',
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: 14,
                                   fontWeight: FontWeight.bold,
-                                  color: AppTheme.deepIndigo,
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.onSurface,
                                 ),
                               ),
                             ),
@@ -480,8 +489,8 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
                                   vertical: 4,
                                 ),
                                 decoration: BoxDecoration(
-                                  color: AppTheme.secondaryTeal.withOpacity(
-                                    0.1,
+                                  color: AppTheme.secondaryTeal.withValues(
+                                    alpha: 0.1,
                                   ),
                                   borderRadius: BorderRadius.circular(8),
                                 ),
@@ -532,13 +541,14 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
     String text,
     Color color,
   ) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.05),
+        color: color.withValues(alpha: isDark ? 0.15 : 0.05),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color.withOpacity(0.1)),
+        border: Border.all(color: color.withValues(alpha: isDark ? 0.3 : 0.1)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -563,7 +573,9 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
             style: TextStyle(
               fontSize: 13,
               fontStyle: FontStyle.italic,
-              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.8),
+              color: Theme.of(
+                context,
+              ).colorScheme.onSurface.withValues(alpha: 0.8),
             ),
           ),
         ],

@@ -133,7 +133,7 @@ class _PlanReflectScreenState extends State<PlanReflectScreen> {
                               color: Colors.white,
                               size: 40,
                             ),
-                            SizedBox(height: 12),
+                            SizedBox(height: 8),
                             Text(
                               'التخطيط والتقييم',
                               style: TextStyle(
@@ -196,10 +196,24 @@ class _PlanReflectScreenState extends State<PlanReflectScreen> {
                   ),
                 ),
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 8),
               _buildTodoInput(todoProvider),
-              const SizedBox(height: 12),
+              const SizedBox(height: 8),
               _buildTodoList(todoProvider),
+              const Padding(
+                padding: EdgeInsets.symmetric(vertical: 20),
+                child: Divider(thickness: 1, color: Colors.black12),
+              ),
+
+              // Good Habits (Predefined)
+              _buildSectionTitle(
+                'عادات يومية مقترحة',
+                Icons.volunteer_activism,
+                color: AppTheme.primaryEmerald,
+              ),
+              const SizedBox(height: 8),
+              _buildGoodHabitsList(todoProvider),
+
               const Padding(
                 padding: EdgeInsets.symmetric(vertical: 20),
                 child: Divider(thickness: 1, color: Colors.black12),
@@ -211,13 +225,13 @@ class _PlanReflectScreenState extends State<PlanReflectScreen> {
                 Icons.do_not_disturb_on_total_silence_rounded,
                 color: Colors.redAccent,
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 8),
               _buildHabitInput(
                 todoProvider,
                 'habit_quit',
                 'إضافة عادة سيئة...',
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 8),
               _buildHabitList(todoProvider, 'habit_quit'),
 
               const Padding(
@@ -231,13 +245,13 @@ class _PlanReflectScreenState extends State<PlanReflectScreen> {
                 Icons.check_circle_outline_rounded,
                 color: Colors.green,
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 8),
               _buildHabitInput(
                 todoProvider,
                 'habit_acquire',
                 'إضافة عادة حسنة...',
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 8),
               _buildHabitList(todoProvider, 'habit_acquire'),
 
               const Padding(
@@ -246,7 +260,7 @@ class _PlanReflectScreenState extends State<PlanReflectScreen> {
               ),
 
               _buildSectionTitle('تقييم اليوم (المحاسبة)', Icons.star_rounded),
-              const SizedBox(height: 12),
+              const SizedBox(height: 8),
               Card(
                 elevation: 0,
                 color: AppTheme.primaryEmerald.withValues(alpha: 0.05),
@@ -291,7 +305,7 @@ class _PlanReflectScreenState extends State<PlanReflectScreen> {
                 child: ElevatedButton.icon(
                   onPressed: () async {
                     await _autoSaveAssessment(debounce: false);
-                    if (mounted) {
+                    if (context.mounted) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
                           content: const Text(
@@ -364,7 +378,7 @@ class _PlanReflectScreenState extends State<PlanReflectScreen> {
           style: TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.bold,
-            color: Colors.grey.withOpacity(0.8),
+            color: Colors.grey.withValues(alpha: 0.8),
           ),
         ),
         const SizedBox(height: 12),
@@ -398,7 +412,7 @@ class _PlanReflectScreenState extends State<PlanReflectScreen> {
         Container(
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: themeColor.withOpacity(0.1),
+            color: themeColor.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(10),
           ),
           child: Icon(icon, color: themeColor, size: 20),
@@ -413,7 +427,11 @@ class _PlanReflectScreenState extends State<PlanReflectScreen> {
           ),
         ),
         const Spacer(),
-        Container(height: 1, width: 50, color: themeColor.withOpacity(0.2)),
+        Container(
+          height: 1,
+          width: 50,
+          color: themeColor.withValues(alpha: 0.2),
+        ),
       ],
     );
   }
@@ -506,7 +524,7 @@ class _PlanReflectScreenState extends State<PlanReflectScreen> {
       decoration: BoxDecoration(
         color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.grey.withOpacity(0.2)),
+        border: Border.all(color: Colors.grey.withValues(alpha: 0.2)),
       ),
       child: Row(
         children: [
@@ -520,7 +538,9 @@ class _PlanReflectScreenState extends State<PlanReflectScreen> {
               onSubmitted: (val) async {
                 if (val.isNotEmpty) {
                   await provider.addTask(val, DateTime.now(), type: type);
-                  if (mounted) context.read<HistoryProvider>().refreshStats();
+                  if (mounted) {
+                    context.read<HistoryProvider>().refreshStats();
+                  }
                   controller.clear();
                 }
               },
@@ -536,7 +556,9 @@ class _PlanReflectScreenState extends State<PlanReflectScreen> {
                   DateTime.now(),
                   type: type,
                 );
-                if (mounted) context.read<HistoryProvider>().refreshStats();
+                if (mounted) {
+                  context.read<HistoryProvider>().refreshStats();
+                }
                 controller.clear();
               }
             },
@@ -556,42 +578,23 @@ class _PlanReflectScreenState extends State<PlanReflectScreen> {
         return Container(
           margin: const EdgeInsets.only(bottom: 10),
           decoration: BoxDecoration(
-            gradient: task.isCompleted
-                ? LinearGradient(
-                    colors: [
-                      Colors.grey.withValues(alpha: 0.05),
-                      Colors.grey.withValues(alpha: 0.02),
-                    ],
-                  )
-                : LinearGradient(
-                    colors: [
-                      Colors.white.withValues(alpha: 0.9),
-                      AppTheme.primaryEmerald.withValues(alpha: 0.05),
-                    ],
-                  ),
+            color: task.isCompleted
+                ? Colors.grey.withValues(alpha: 0.05)
+                : AppTheme.primaryEmerald.withValues(alpha: 0.05),
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
               color: task.isCompleted
                   ? Colors.grey.withValues(alpha: 0.2)
-                  : AppTheme.primaryEmerald.withValues(alpha: 0.3),
+                  : AppTheme.primaryEmerald.withValues(alpha: 0.2),
               width: 1.5,
             ),
-            boxShadow: [
-              BoxShadow(
-                color: task.isCompleted
-                    ? Colors.black.withValues(alpha: 0.02)
-                    : AppTheme.primaryEmerald.withValues(alpha: 0.08),
-                blurRadius: 8,
-                offset: const Offset(0, 3),
-              ),
-            ],
           ),
           child: ListTile(
             leading: Checkbox(
               value: task.isCompleted,
               onChanged: (val) async {
                 await provider.toggleTask(index);
-                if (mounted) {
+                if (context.mounted) {
                   context.read<HistoryProvider>().refreshStats();
                 }
               },
@@ -606,7 +609,11 @@ class _PlanReflectScreenState extends State<PlanReflectScreen> {
                 decoration: task.isCompleted
                     ? TextDecoration.lineThrough
                     : null,
-                color: task.isCompleted ? Colors.grey : AppTheme.deepIndigo,
+                color: task.isCompleted
+                    ? Colors.grey
+                    : (Theme.of(context).brightness == Brightness.dark
+                          ? Colors.white.withValues(alpha: 0.9)
+                          : AppTheme.deepIndigo),
                 fontWeight: task.isCompleted
                     ? FontWeight.normal
                     : FontWeight.w700,
@@ -621,7 +628,7 @@ class _PlanReflectScreenState extends State<PlanReflectScreen> {
               ),
               onPressed: () async {
                 await provider.deleteTask(task.id!, DateTime.now());
-                if (mounted) {
+                if (context.mounted) {
                   context.read<HistoryProvider>().refreshStats();
                 }
               },
@@ -644,7 +651,7 @@ class _PlanReflectScreenState extends State<PlanReflectScreen> {
         child: Text(
           'لا توجد عادات مسجلة',
           textAlign: TextAlign.center,
-          style: TextStyle(color: Colors.grey.withOpacity(0.7)),
+          style: TextStyle(color: Colors.grey.withValues(alpha: 0.7)),
         ),
       );
     }
@@ -657,10 +664,10 @@ class _PlanReflectScreenState extends State<PlanReflectScreen> {
         final habit = habits[index];
         return Card(
           elevation: 0,
-          color: color.withOpacity(0.05),
+          color: color.withValues(alpha: 0.05),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
-            side: BorderSide(color: color.withOpacity(0.2)),
+            side: BorderSide(color: color.withValues(alpha: 0.2)),
           ),
           margin: const EdgeInsets.only(bottom: 8),
           child: ListTile(
@@ -670,7 +677,9 @@ class _PlanReflectScreenState extends State<PlanReflectScreen> {
               activeColor: color,
               onChanged: (val) async {
                 await provider.toggleTaskById(habit.id!);
-                if (mounted) context.read<HistoryProvider>().refreshStats();
+                if (mounted) {
+                  context.read<HistoryProvider>().refreshStats();
+                }
               },
             ),
             title: Text(
@@ -681,7 +690,9 @@ class _PlanReflectScreenState extends State<PlanReflectScreen> {
                     : null,
                 color: habit.isCompleted
                     ? Colors.grey
-                    : Theme.of(context).textTheme.bodyLarge?.color,
+                    : Theme.of(
+                        context,
+                      ).textTheme.bodyLarge?.color?.withValues(alpha: 0.9),
               ),
             ),
             trailing: IconButton(
@@ -689,7 +700,9 @@ class _PlanReflectScreenState extends State<PlanReflectScreen> {
               color: Colors.grey,
               onPressed: () async {
                 await provider.deleteTask(habit.id!, DateTime.now());
-                if (mounted) context.read<HistoryProvider>().refreshStats();
+                if (mounted) {
+                  context.read<HistoryProvider>().refreshStats();
+                }
               },
             ),
           ),
@@ -730,5 +743,76 @@ class _PlanReflectScreenState extends State<PlanReflectScreen> {
     if (rating >= 5) return 'يوم متوسط';
     if (rating >= 3) return 'يحتاج تحسين';
     return 'شد حيلك يا بطل 💪';
+  }
+
+  Widget _buildGoodHabitsList(TodoProvider provider) {
+    final habits = provider.goodHabits;
+
+    if (habits.isEmpty) {
+      return Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Text(
+          'لا توجد عادات مقترحة. يمكنك إضافتها كمهام عادية أعلاه',
+          textAlign: TextAlign.center,
+          style: TextStyle(color: Colors.grey.withValues(alpha: 0.7)),
+        ),
+      );
+    }
+
+    return ListView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: habits.length,
+      itemBuilder: (context, index) {
+        final habit = habits[index];
+        return Card(
+          elevation: 0,
+          color: AppTheme.primaryEmerald.withValues(alpha: 0.05),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+            side: BorderSide(
+              color: AppTheme.primaryEmerald.withValues(alpha: 0.2),
+            ),
+          ),
+          margin: const EdgeInsets.only(bottom: 8),
+          child: ListTile(
+            contentPadding: const EdgeInsets.symmetric(horizontal: 12),
+            leading: Checkbox(
+              value: habit.isCompleted,
+              activeColor: AppTheme.primaryEmerald,
+              onChanged: (val) async {
+                await provider.toggleTaskById(habit.id!);
+                if (mounted) {
+                  context.read<HistoryProvider>().refreshStats();
+                }
+              },
+            ),
+            title: Text(
+              habit.title,
+              style: TextStyle(
+                decoration: habit.isCompleted
+                    ? TextDecoration.lineThrough
+                    : null,
+                color: habit.isCompleted
+                    ? Colors.grey
+                    : Theme.of(
+                        context,
+                      ).textTheme.bodyLarge?.color?.withValues(alpha: 0.9),
+              ),
+            ),
+            trailing: IconButton(
+              icon: const Icon(Icons.delete_outline, size: 20),
+              color: Colors.grey,
+              onPressed: () async {
+                await provider.deleteTask(habit.id!, DateTime.now());
+                if (mounted) {
+                  context.read<HistoryProvider>().refreshStats();
+                }
+              },
+            ),
+          ),
+        );
+      },
+    );
   }
 }

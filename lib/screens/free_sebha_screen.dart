@@ -47,6 +47,7 @@ class _FreeSebhaScreenState extends State<FreeSebhaScreen> {
     }
 
     // Load current counts from provider
+    if (!mounted) return;
     final historyProv = context.read<HistoryProvider>();
     for (var zikr in loaded) {
       final stat = historyProv.azkarStats.firstWhere(
@@ -169,7 +170,7 @@ class _FreeSebhaScreenState extends State<FreeSebhaScreen> {
           Icon(
             Icons.auto_awesome_rounded,
             size: 64,
-            color: AppTheme.primaryEmerald.withOpacity(0.3),
+            color: AppTheme.primaryEmerald.withValues(alpha: 0.3),
           ),
           const SizedBox(height: 16),
           const Text(
@@ -260,7 +261,7 @@ class _FreeSebhaScreenState extends State<FreeSebhaScreen> {
           child: CircularProgressIndicator(
             value: progress,
             strokeWidth: 4,
-            backgroundColor: AppTheme.primaryEmerald.withOpacity(0.1),
+            backgroundColor: AppTheme.primaryEmerald.withValues(alpha: 0.1),
             valueColor: AlwaysStoppedAnimation<Color>(
               isFinished ? Colors.grey : AppTheme.primaryEmerald,
             ),

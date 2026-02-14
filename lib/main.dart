@@ -14,6 +14,7 @@ import 'providers/todo_provider.dart';
 import 'providers/assessment_provider.dart';
 import 'providers/statistics_provider.dart';
 import 'providers/theme_provider.dart';
+import 'providers/notification_provider.dart';
 import 'services/widget_service.dart';
 import 'services/notification_service.dart';
 
@@ -33,13 +34,16 @@ void main() async {
   await tryInitializeDateFormatting();
   Intl.defaultLocale = 'ar';
 
-  // Initialize HomeWidget
-  await WidgetService.init();
+  // Initialize notification service early
+  final notificationService = NotificationService();
+  await notificationService.init();
+  await notificationService.requestPermissions();
 
   runApp(
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => ThemeProvider()),
+        ChangeNotifierProvider(create: (_) => NotificationProvider()),
         ChangeNotifierProvider(create: (_) => WorshipProvider()),
         ChangeNotifierProvider(create: (_) => QuranProvider()),
         ChangeNotifierProvider(create: (_) => TodoProvider()),
@@ -50,19 +54,10 @@ void main() async {
     ),
   );
 
-  // Schedule initial widget updates after valid context is available or just use service
-  // We can't access Provider here easily without context, but we can rely on Home Screen init.
-
   // Initialize Widgets
   WidgetsBinding.instance.addPostFrameCallback((_) async {
     // Initial Zikr
     await WidgetService.updateZikrWidget();
-
-    // Notifications Verification
-    final notificationService = NotificationService();
-    await notificationService.init();
-    await notificationService.requestPermissions();
-    await notificationService.scheduleProphetPrayerReminder();
   });
 }
 

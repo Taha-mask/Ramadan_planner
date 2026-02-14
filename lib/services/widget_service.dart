@@ -5,6 +5,7 @@ import 'package:hijri/hijri_calendar.dart';
 import '../models/todo.dart';
 import 'daily_zikr_service.dart';
 import 'location_service.dart';
+import 'package:intl/intl.dart';
 
 class WidgetService {
   static const String _tasksWidgetProvider = 'TasksWidgetProvider';
@@ -88,8 +89,7 @@ class WidgetService {
           // Simplify name for Dhuhr if needed, or keep as is
           if (nextPrayerName == 'ظهر (فرض)') nextPrayerName = 'ظهر';
 
-          nextPrayerTimeStr =
-              "${entry.value.hour}:${entry.value.minute.toString().padLeft(2, '0')}";
+          nextPrayerTimeStr = DateFormat('h:mm a', 'ar').format(entry.value);
           nextPrayerMillis = entry.value.millisecondsSinceEpoch;
           break;
         }
@@ -130,8 +130,7 @@ class WidgetService {
 
         return {
           'name': name,
-          'time':
-              "${e.value.hour}:${e.value.minute.toString().padLeft(2, '0')}",
+          'time': DateFormat('h:mm a', 'ar').format(e.value),
           'millis': e.value.millisecondsSinceEpoch,
         };
       }).toList();

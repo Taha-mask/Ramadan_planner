@@ -7,6 +7,7 @@ import 'free_sebha_screen.dart';
 import '../providers/quran_provider.dart';
 import '../providers/statistics_provider.dart';
 import '../providers/theme_provider.dart';
+import '../providers/notification_provider.dart';
 import '../theme/app_theme.dart';
 import '../utils/quran_data.dart';
 import '../providers/assessment_provider.dart';
@@ -35,6 +36,7 @@ class _QuranAzkarScreenState extends State<QuranAzkarScreen> {
   Future<void> _initData() async {
     final quranProv = context.read<QuranProvider>();
     await quranProv.loadProgress(DateTime.now());
+    if (!mounted) return;
 
     if (quranProv.current != null) {
       final p = quranProv.current!;
@@ -83,13 +85,16 @@ class _QuranAzkarScreenState extends State<QuranAzkarScreen> {
   Future<void> _autoSaveQuran() async {
     if (_debounce?.isActive ?? false) _debounce!.cancel();
     _debounce = Timer(const Duration(milliseconds: 500), () async {
-      await context.read<QuranProvider>().saveProgress(
+      final quranProv = context.read<QuranProvider>();
+      await quranProv.saveProgress(
         juz: int.tryParse(_juzController.text) ?? 0,
         surah: _surahController.text,
         page: 0,
         ayah: int.tryParse(_ayahController.text) ?? 0,
       );
+
       if (mounted) {
+        context.read<NotificationProvider>().markQuranAsRead();
         context.read<HistoryProvider>().refreshStats();
       }
     });
@@ -239,7 +244,7 @@ class _QuranAzkarScreenState extends State<QuranAzkarScreen> {
         borderRadius: BorderRadius.circular(30),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.03),
+            color: Colors.black.withValues(alpha: 0.03),
             blurRadius: 15,
             offset: const Offset(0, 8),
           ),
@@ -254,16 +259,22 @@ class _QuranAzkarScreenState extends State<QuranAzkarScreen> {
             decoration: InputDecoration(
               hintText: 'اكتب دعاءك اليومي هنا...',
               hintStyle: TextStyle(
-                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
+                color: Theme.of(
+                  context,
+                ).colorScheme.onSurface.withValues(alpha: 0.5),
                 fontSize: 14,
               ),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(15),
-                borderSide: BorderSide(color: Colors.grey.withOpacity(0.1)),
+                borderSide: BorderSide(
+                  color: Colors.grey.withValues(alpha: 0.1),
+                ),
               ),
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(15),
-                borderSide: BorderSide(color: Colors.grey.withOpacity(0.1)),
+                borderSide: BorderSide(
+                  color: Colors.grey.withValues(alpha: 0.1),
+                ),
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(15),
@@ -273,7 +284,7 @@ class _QuranAzkarScreenState extends State<QuranAzkarScreen> {
                 ),
               ),
               filled: true,
-              fillColor: AppTheme.primaryEmerald.withOpacity(0.05),
+              fillColor: AppTheme.primaryEmerald.withValues(alpha: 0.05),
               contentPadding: const EdgeInsets.all(16),
             ),
           ),
@@ -288,7 +299,7 @@ class _QuranAzkarScreenState extends State<QuranAzkarScreen> {
         Container(
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: AppTheme.primaryEmerald.withOpacity(0.1),
+            color: AppTheme.primaryEmerald.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(10),
           ),
           child: Icon(icon, color: AppTheme.primaryEmerald, size: 20),
@@ -306,7 +317,7 @@ class _QuranAzkarScreenState extends State<QuranAzkarScreen> {
         Container(
           height: 1,
           width: 50,
-          color: AppTheme.primaryEmerald.withOpacity(0.2),
+          color: AppTheme.primaryEmerald.withValues(alpha: 0.2),
         ),
       ],
     );
@@ -320,7 +331,7 @@ class _QuranAzkarScreenState extends State<QuranAzkarScreen> {
         borderRadius: BorderRadius.circular(30),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.03),
+            color: Colors.black.withValues(alpha: 0.03),
             blurRadius: 15,
             offset: const Offset(0, 8),
           ),
@@ -331,7 +342,7 @@ class _QuranAzkarScreenState extends State<QuranAzkarScreen> {
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: AppTheme.primaryEmerald.withOpacity(0.05),
+              color: AppTheme.primaryEmerald.withValues(alpha: 0.05),
               borderRadius: BorderRadius.circular(15),
             ),
             child: const Text(
@@ -404,7 +415,7 @@ class _QuranAzkarScreenState extends State<QuranAzkarScreen> {
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: color.withOpacity(0.05),
+            color: color.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -421,7 +432,7 @@ class _QuranAzkarScreenState extends State<QuranAzkarScreen> {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: color.withOpacity(0.1),
+                  color: color.withValues(alpha: 0.1),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(icon, size: 28, color: color),
@@ -552,10 +563,11 @@ class _QuranAzkarScreenState extends State<QuranAzkarScreen> {
           : [],
       onChanged: maxAyahs > 0
           ? (val) {
-              if (val != null)
+              if (val != null) {
                 setState(() {
                   ayahController.text = val;
                 });
+              }
             }
           : null,
       menuMaxHeight: 300,
@@ -566,17 +578,17 @@ class _QuranAzkarScreenState extends State<QuranAzkarScreen> {
     return InputDecoration(
       labelText: label,
       labelStyle: TextStyle(
-        color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
+        color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
         fontSize: 13,
       ),
       floatingLabelBehavior: FloatingLabelBehavior.always,
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(15),
-        borderSide: BorderSide(color: Colors.grey.withOpacity(0.1)),
+        borderSide: BorderSide(color: Colors.grey.withValues(alpha: 0.1)),
       ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(15),
-        borderSide: BorderSide(color: Colors.grey.withOpacity(0.1)),
+        borderSide: BorderSide(color: Colors.grey.withValues(alpha: 0.1)),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(15),

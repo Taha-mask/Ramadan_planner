@@ -2,11 +2,11 @@
 <appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
     android:minWidth="250dp"
     android:minHeight="180dp"
-    android:previewImage="@drawable/preview_tasks"
+    android:previewImage="@drawable/widget_preview_tasks"
     android:updatePeriodMillis="0"
     android:initialLayout="@layout/widget_tasks"
     android:resizeMode="horizontal|vertical"
     android:widgetCategory="home_screen"
     android:configure="com.antigravity.ramadan.ramadan_planner.TasksWidgetConfigActivity"
-    android:label="Tasks Widget">
+    android:label="قائمة المهام">
 </appwidget-provider>

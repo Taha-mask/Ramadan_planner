@@ -5,6 +5,7 @@ import '../services/database_helper.dart';
 import '../services/prayer_service.dart';
 import '../services/notification_service.dart';
 import '../services/widget_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class WorshipProvider with ChangeNotifier {
   final PrayerService _prayerService = PrayerService();
@@ -17,6 +18,7 @@ class WorshipProvider with ChangeNotifier {
   Future<void> _initNotifications() async {
     await _notificationService.init();
     await _notificationService.requestPermissions();
+    await loadEntries(DateTime.now());
   }
 
   final List<String> _faraidNames = ['فجر', 'ظهر (فرض)', 'عصر', 'مغرب', 'عشاء'];
@@ -132,10 +134,20 @@ class WorshipProvider with ChangeNotifier {
   }
 
   Future<void> _scheduleAllNotifications() async {
-    await _notificationService.cancelAll();
+    final prefs = await SharedPreferences.getInstance();
+    final bool sunnahEnabled = prefs.getBool('notify_sunnah') ?? true;
+
+    for (String name in _allNamesOrdered) {
+      await _notificationService.cancelNotification(name.hashCode);
+    }
+
     for (var entry in _entries) {
       if (!entry.isCompleted) {
-        await scheduleNotification(entry);
+        // Only schedule if it's a Fard prayer OR if Sunnah reminders are enabled
+        bool isFaraid = _faraidNames.contains(entry.prayerName);
+        if (isFaraid || sunnahEnabled) {
+          await scheduleNotification(entry);
+        }
       }
     }
   }

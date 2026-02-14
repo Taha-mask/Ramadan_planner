@@ -15,16 +15,32 @@ import android.content.ClipboardManager
 import android.widget.Toast
 
 class ZikrWidgetProvider : HomeWidgetProvider() {
+    private fun getSafeString(prefs: SharedPreferences, key: String, default: String): String {
+        return try {
+            prefs.getString(key, default) ?: default
+        } catch (e: Exception) {
+            prefs.all[key]?.toString() ?: default
+        }
+    }
+
+    private fun getSafeInt(prefs: SharedPreferences, key: String, default: Int): Int {
+        return try {
+            prefs.getInt(key, default)
+        } catch (e: Exception) {
+            prefs.all[key]?.toString()?.toIntOrNull() ?: default
+        }
+    }
+
     override fun onUpdate(context: Context, appWidgetManager: AppWidgetManager, appWidgetIds: IntArray, widgetData: SharedPreferences) {
         appWidgetIds.forEach { widgetId ->
             val views = RemoteViews(context.packageName, R.layout.widget_zikr)
             
-            val zikrListJson = widgetData.getString("zikr_list", "[]")
+            val zikrListJson = getSafeString(widgetData, "zikr_list", "[]")
             // Check for manual index override
-            val manualIndex = widgetData.getInt("zikr_manual_index_$widgetId", -1)
+            val manualIndex = getSafeInt(widgetData, "zikr_manual_index_$widgetId", -1)
             
             val currentZikr = getZikrText(jsonStr = zikrListJson, manualIndex = manualIndex) 
-                              ?: widgetData.getString("zikr_text", "سبحان الله وبحمده")
+                              ?: getSafeString(widgetData, "zikr_text", "سبحان الله وبحمده")
 
             views.setTextViewText(R.id.tv_zikr_content, currentZikr)
             
@@ -52,6 +68,19 @@ class ZikrWidgetProvider : HomeWidgetProvider() {
                 PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
             )
             views.setOnClickPendingIntent(R.id.btn_copy, copyPendingIntent)
+
+            // Share Button
+            val shareIntent = Intent(context, ZikrWidgetProvider::class.java).apply {
+                action = "ACTION_SHARE_ZIKR"
+                putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, widgetId)
+                putExtra("EXTRA_TEXT", currentZikr)
+                data = Uri.parse("zikr://share/$widgetId")
+            }
+            val sharePendingIntent = PendingIntent.getBroadcast(
+                context, widgetId + 2000, shareIntent, 
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            )
+            views.setOnClickPendingIntent(R.id.btn_share, sharePendingIntent)
             
             appWidgetManager.updateAppWidget(widgetId, views)
         }
@@ -65,7 +94,7 @@ class ZikrWidgetProvider : HomeWidgetProvider() {
         if (widgetId != AppWidgetManager.INVALID_APPWIDGET_ID) {
             if (action == "ACTION_NEXT_ZIKR") {
                 val prefs = context.getSharedPreferences("HomeWidgetPreferences", Context.MODE_PRIVATE)
-                var index = prefs.getInt("zikr_manual_index_$widgetId", -1)
+                var index = getSafeInt(prefs, "zikr_manual_index_$widgetId", -1)
                 
                 // If distinct manual index not set, start from day offset
                 if (index == -1) {
@@ -88,6 +117,19 @@ class ZikrWidgetProvider : HomeWidgetProvider() {
                     val clip = ClipData.newPlainText("Zikr", text)
                     clipboard.setPrimaryClip(clip)
                     Toast.makeText(context, "تم النسخ", Toast.LENGTH_SHORT).show()
+                }
+            
+            } else if (action == "ACTION_SHARE_ZIKR") {
+                val text = intent.getStringExtra("EXTRA_TEXT") ?: ""
+                if (text.isNotEmpty()) {
+                    val shareIntent = Intent(Intent.ACTION_SEND).apply {
+                        type = "text/plain"
+                        putExtra(Intent.EXTRA_TEXT, text)
+                        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    }
+                    context.startActivity(Intent.createChooser(shareIntent, "مشاركة الذكر").apply {
+                        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    })
                 }
             }
         }

@@ -48,7 +48,18 @@
             android:background="?android:attr/selectableItemBackgroundBorderless"
             android:tint="@color/widget_text_secondary"
             android:contentDescription="Copy"
-            android:layout_marginEnd="32dp"/>
+            android:layout_marginEnd="16dp"/>
+
+        <!-- Share -->
+        <ImageButton
+            android:id="@+id/btn_share"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:src="@android:drawable/ic_menu_share" 
+            android:background="?android:attr/selectableItemBackgroundBorderless"
+            android:tint="@color/widget_text_secondary"
+            android:contentDescription="Share"
+            android:layout_marginEnd="16dp"/>
 
         <!-- Next -->
         <ImageButton

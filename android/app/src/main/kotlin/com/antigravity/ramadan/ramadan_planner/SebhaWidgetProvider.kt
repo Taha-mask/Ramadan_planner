@@ -10,11 +10,19 @@ import android.content.Intent
 import android.net.Uri
 
 class SebhaWidgetProvider : HomeWidgetProvider() {
+    private fun getSafeInt(prefs: SharedPreferences, key: String, default: Int): Int {
+        return try {
+            prefs.getInt(key, default)
+        } catch (e: Exception) {
+            prefs.all[key]?.toString()?.toIntOrNull() ?: default
+        }
+    }
+
     override fun onUpdate(context: Context, appWidgetManager: AppWidgetManager, appWidgetIds: IntArray, widgetData: SharedPreferences) {
         appWidgetIds.forEach { widgetId ->
             val views = RemoteViews(context.packageName, R.layout.widget_sebha).apply {
                 // Get count
-                val count = widgetData.getInt("sebha_count", 0)
+                val count = getSafeInt(widgetData, "sebha_count", 0)
                 setTextViewText(R.id.tv_counter, count.toString())
                 
                 // Update Target Text (Removed)
@@ -60,7 +68,7 @@ class SebhaWidgetProvider : HomeWidgetProvider() {
         
         if (action == "ACTION_INCREMENT" || action == "ACTION_RESET") {
             val widgetData = context.getSharedPreferences("HomeWidgetPreferences", Context.MODE_PRIVATE)
-            var count = widgetData.getInt("sebha_count", 0)
+            var count = getSafeInt(widgetData, "sebha_count", 0)
             
             if (action == "ACTION_INCREMENT") {
                 count++

@@ -2,12 +2,12 @@
 <appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
     android:minWidth="250dp"
     android:minHeight="100dp"
-    android:previewImage="@drawable/preview_zikr"
+    android:previewImage="@drawable/widget_preview_azkar"
     android:targetCellWidth="4"
     android:targetCellHeight="3"
     android:updatePeriodMillis="86400000"
     android:initialLayout="@layout/widget_zikr"
     android:resizeMode="horizontal|vertical"
     android:widgetCategory="home_screen"
-    android:label="Zikr Widget">
+    android:label="الذكر اليومي">
 </appwidget-provider>

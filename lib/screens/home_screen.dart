@@ -136,7 +136,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         borderRadius: const BorderRadius.vertical(
                           top: Radius.circular(30),
                         ),
-                        color: AppTheme.primaryEmerald.withOpacity(0.1),
+                        color: AppTheme.primaryEmerald.withValues(alpha: 0.1),
                       ),
                       labelColor: AppTheme.primaryEmerald,
                       unselectedLabelColor: Colors.grey,
@@ -190,7 +190,7 @@ class _HomeScreenState extends State<HomeScreen> {
           gDate,
           style: TextStyle(
             fontSize: 14,
-            color: Colors.white.withOpacity(0.7),
+            color: Colors.white.withValues(alpha: 0.7),
             fontWeight: FontWeight.w500,
           ),
         ),
@@ -208,12 +208,12 @@ class _HomeScreenState extends State<HomeScreen> {
       margin: const EdgeInsets.symmetric(horizontal: 24),
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.15),
+        color: Colors.white.withValues(alpha: 0.15),
         borderRadius: BorderRadius.circular(30),
-        border: Border.all(color: Colors.white.withOpacity(0.2)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withValues(alpha: 0.1),
             blurRadius: 20,
             offset: const Offset(0, 10),
           ),
@@ -230,7 +230,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   Text(
                     'الصلاة القادمة',
                     style: TextStyle(
-                      color: Colors.white.withOpacity(0.8),
+                      color: Colors.white.withValues(alpha: 0.8),
                       fontSize: 14,
                       fontWeight: FontWeight.bold,
                     ),
@@ -248,7 +248,7 @@ class _HomeScreenState extends State<HomeScreen> {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.2),
+                  color: Colors.white.withValues(alpha: 0.2),
                   shape: BoxShape.circle,
                 ),
                 child: const Icon(
@@ -264,8 +264,10 @@ class _HomeScreenState extends State<HomeScreen> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               _buildCountdownUnit(
-                timeRemaining?.inHours.toString().padLeft(2, '0') ?? '00',
-                'ساعة',
+                (timeRemaining?.inSeconds.remainder(60) ?? 0)
+                    .toString()
+                    .padLeft(2, '0'),
+                'ثانية',
               ),
               _buildCountdownSeparator(),
               _buildCountdownUnit(
@@ -276,10 +278,8 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               _buildCountdownSeparator(),
               _buildCountdownUnit(
-                (timeRemaining?.inSeconds.remainder(60) ?? 0)
-                    .toString()
-                    .padLeft(2, '0'),
-                'ثانية',
+                timeRemaining?.inHours.toString().padLeft(2, '0') ?? '00',
+                'ساعة',
               ),
             ],
           ),
@@ -303,7 +303,7 @@ class _HomeScreenState extends State<HomeScreen> {
         Text(
           label,
           style: TextStyle(
-            color: Colors.white.withOpacity(0.6),
+            color: Colors.white.withValues(alpha: 0.6),
             fontSize: 10,
             fontWeight: FontWeight.bold,
           ),
@@ -318,7 +318,7 @@ class _HomeScreenState extends State<HomeScreen> {
       child: Text(
         ':',
         style: TextStyle(
-          color: Colors.white.withOpacity(0.5),
+          color: Colors.white.withValues(alpha: 0.5),
           fontSize: 24,
           fontWeight: FontWeight.bold,
         ),
@@ -347,12 +347,14 @@ class _HomeScreenState extends State<HomeScreen> {
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            AppTheme.primaryEmerald.withOpacity(0.05),
-            AppTheme.secondaryTeal.withOpacity(0.1),
+            AppTheme.primaryEmerald.withValues(alpha: 0.05),
+            AppTheme.secondaryTeal.withValues(alpha: 0.1),
           ],
         ),
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: AppTheme.primaryEmerald.withOpacity(0.1)),
+        border: Border.all(
+          color: AppTheme.primaryEmerald.withValues(alpha: 0.1),
+        ),
       ),
       child: Column(
         children: [
@@ -403,7 +405,7 @@ class _HomeScreenState extends State<HomeScreen> {
             : Border.all(color: Colors.transparent),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.03),
+            color: Colors.black.withValues(alpha: 0.03),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -428,7 +430,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   )
                 : Icon(
                     Icons.radio_button_unchecked,
-                    color: Colors.grey.withOpacity(0.5),
+                    color: Colors.grey.withValues(alpha: 0.5),
                     size: 32,
                   ),
           ),
@@ -439,7 +441,7 @@ class _HomeScreenState extends State<HomeScreen> {
             fontSize: 18,
             fontWeight: FontWeight.w800,
             color: entry.isCompleted
-                ? AppTheme.primaryEmerald.withOpacity(0.5)
+                ? AppTheme.primaryEmerald.withValues(alpha: 0.5)
                 : null,
             decoration: entry.isCompleted ? TextDecoration.lineThrough : null,
           ),
@@ -485,9 +487,9 @@ class _HomeScreenState extends State<HomeScreen> {
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.15),
+              color: Colors.white.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: Colors.white.withOpacity(0.3)),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.3)),
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
@@ -557,7 +559,7 @@ class _HomeScreenState extends State<HomeScreen> {
             onPressed: () async {
               if (controller.text.isNotEmpty) {
                 await LocationService().saveAddress(controller.text);
-                if (mounted) {
+                if (context.mounted) {
                   setState(() {});
                   Navigator.pop(context);
                 }

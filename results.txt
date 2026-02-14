@@ -1,0 +1,7 @@
+Analyzing Ramadan_planner...                                    
+
+   info - Statements in an if should be enclosed in a block - lib\screens\plan_reflect_screen.dart:697:19 - curly_braces_in_flow_control_structures
+   info - Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check - lib\screens\plan_reflect_screen.dart:716:30 - use_build_context_synchronously
+   info - Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check - lib\screens\plan_reflect_screen.dart:808:19 - use_build_context_synchronously
+   info - Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check - lib\screens\plan_reflect_screen.dart:829:19 - use_build_context_synchronously
+

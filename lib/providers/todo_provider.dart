@@ -14,6 +14,8 @@ class TodoProvider with ChangeNotifier {
       _tasks.where((t) => t.type == 'habit_quit').toList();
   List<TodoTask> get habitsToAcquire =>
       _tasks.where((t) => t.type == 'habit_acquire').toList();
+  List<TodoTask> get goodHabits =>
+      _tasks.where((t) => t.type == 'good_habit').toList();
 
   Future<void> loadTasks(DateTime date) async {
     String formattedDate = DateFormat('yyyy-MM-dd').format(date);

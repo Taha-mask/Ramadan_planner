@@ -20,11 +20,19 @@ class TasksWidgetService : RemoteViewsService() {
 class TasksRemoteViewsFactory(private val context: Context, private val appWidgetId: Int) : RemoteViewsService.RemoteViewsFactory {
     private var filteredTasks: JSONArray = JSONArray()
 
+    private fun getSafeString(prefs: SharedPreferences, key: String, default: String): String {
+        return try {
+            prefs.getString(key, default) ?: default
+        } catch (e: Exception) {
+            prefs.all[key]?.toString() ?: default
+        }
+    }
+
     override fun onCreate() {}
 
     override fun onDataSetChanged() {
         val sharedPrefs: SharedPreferences = context.getSharedPreferences("HomeWidgetPreferences", Context.MODE_PRIVATE)
-        val tasksListJson = sharedPrefs.getString("tasks_list", "[]")
+        val tasksListJson = getSafeString(sharedPrefs, "tasks_list", "[]")
         
         try {
             val allTasks = JSONArray(tasksListJson)
@@ -59,12 +67,19 @@ class TasksRemoteViewsFactory(private val context: Context, private val appWidge
                  // views.setInt(R.id.tv_task_title, "setPaintFlags", 0)
             }
 
-            // Fill-in intent for Deep Link
-            val fillInIntent = Intent().apply {
-                putExtra("task_id", task.optString("id"))
-                putExtra("route", "tasks")
+            // Fill-in intent for Open App
+            val openIntent = Intent().apply {
+                putExtra("task_id", task.opt("id").toString())
+                putExtra("click_action", "open")
             }
-            views.setOnClickFillInIntent(R.id.item_container, fillInIntent)
+            views.setOnClickFillInIntent(R.id.text_container, openIntent)
+
+            // Fill-in intent for Toggle Checkbox
+            val toggleIntent = Intent().apply {
+                putExtra("task_id", task.opt("id").toString())
+                putExtra("click_action", "toggle")
+            }
+            views.setOnClickFillInIntent(R.id.iv_checkmark, toggleIntent)
             
         } catch (e: Exception) {
             e.printStackTrace()

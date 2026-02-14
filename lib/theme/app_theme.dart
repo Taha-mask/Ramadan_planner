@@ -23,7 +23,6 @@ class AppTheme {
       primary: primaryEmerald,
       secondary: secondaryTeal,
       surface: Colors.white,
-      background: softGrey,
     ),
     scaffoldBackgroundColor: softGrey,
     appBarTheme: const AppBarTheme(
@@ -93,24 +92,24 @@ class AppTheme {
       elevation: 0,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(24),
-        side: BorderSide(color: Colors.white.withOpacity(0.05)),
+        side: BorderSide(color: Colors.white.withValues(alpha: 0.05)),
       ),
     ),
     inputDecorationTheme: InputDecorationTheme(
       filled: true,
       fillColor: const Color(0xFF161625), // Deeper input color
-      hintStyle: TextStyle(color: Colors.white.withOpacity(0.4)),
-      labelStyle: TextStyle(color: Colors.white.withOpacity(0.7)),
+      hintStyle: TextStyle(color: Colors.white.withValues(alpha: 0.4)),
+      labelStyle: TextStyle(color: Colors.white.withValues(alpha: 0.7)),
       counterStyle: const TextStyle(color: Colors.white70),
       prefixIconColor: AppTheme.primaryEmerald,
       suffixIconColor: AppTheme.primaryEmerald,
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(16),
-        borderSide: BorderSide(color: Colors.white.withOpacity(0.1)),
+        borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
       ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(16),
-        borderSide: BorderSide(color: Colors.white.withOpacity(0.1)),
+        borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
       ),
     ),
     textTheme: const TextTheme(

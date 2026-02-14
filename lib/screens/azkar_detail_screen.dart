@@ -46,16 +46,18 @@ class _AzkarDetailScreenState extends State<AzkarDetailScreen> {
             child: Card(
               margin: const EdgeInsets.only(bottom: 20),
               elevation: isFinished ? 0 : 6,
-              shadowColor: Theme.of(context).shadowColor.withOpacity(0.05),
+              shadowColor: Theme.of(
+                context,
+              ).shadowColor.withValues(alpha: 0.05),
               color: isFinished
-                  ? Theme.of(context).cardColor.withOpacity(0.5)
+                  ? Theme.of(context).cardColor.withValues(alpha: 0.5)
                   : Theme.of(context).cardColor,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(24),
                 side: BorderSide(
                   color: isFinished
                       ? Colors.transparent
-                      : Theme.of(context).dividerColor.withOpacity(0.1),
+                      : Theme.of(context).dividerColor.withValues(alpha: 0.1),
                 ),
               ),
               child: InkWell(
@@ -90,7 +92,7 @@ class _AzkarDetailScreenState extends State<AzkarDetailScreen> {
                           color: isFinished
                               ? Theme.of(
                                   context,
-                                ).colorScheme.onSurface.withOpacity(0.4)
+                                ).colorScheme.onSurface.withValues(alpha: 0.4)
                               : Theme.of(context).colorScheme.onSurface,
                         ),
                       ),
@@ -106,7 +108,7 @@ class _AzkarDetailScreenState extends State<AzkarDetailScreen> {
                             decoration: BoxDecoration(
                               color: Theme.of(
                                 context,
-                              ).dividerColor.withOpacity(0.05),
+                              ).dividerColor.withValues(alpha: 0.05),
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: Text(
@@ -115,7 +117,7 @@ class _AzkarDetailScreenState extends State<AzkarDetailScreen> {
                                 fontWeight: FontWeight.w800,
                                 color: Theme.of(
                                   context,
-                                ).colorScheme.onSurface.withOpacity(0.6),
+                                ).colorScheme.onSurface.withValues(alpha: 0.6),
                               ),
                             ),
                           ),
@@ -133,7 +135,7 @@ class _AzkarDetailScreenState extends State<AzkarDetailScreen> {
                                       BoxShadow(
                                         color: const Color(
                                           0xFFFFD700,
-                                        ).withOpacity(0.3),
+                                        ).withValues(alpha: 0.3),
                                         blurRadius: 10,
                                         offset: const Offset(0, 4),
                                       ),

@@ -1,110 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import '../theme/app_theme.dart';
-import '../services/notification_service.dart';
+import 'package:intl/intl.dart';
+import '../providers/notification_provider.dart';
+import '../providers/worship_provider.dart';
+import 'package:share_plus/share_plus.dart';
 
-class SettingsScreen extends StatefulWidget {
+class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
 
   @override
-  State<SettingsScreen> createState() => _SettingsScreenState();
-}
-
-class _SettingsScreenState extends State<SettingsScreen> {
-  bool _prophetReminderEnabled = true;
-  String _prophetReminderInterval =
-      'everyMinute'; // everyMinute, hourly, daily, weekly
-  bool _sunnahReminderEnabled = true;
-  bool _quranReminderEnabled = false;
-  TimeOfDay _quranReminderTime = const TimeOfDay(hour: 21, minute: 0);
-
-  @override
-  void initState() {
-    super.initState();
-    _loadSettings();
-  }
-
-  Future<void> _loadSettings() async {
-    final prefs = await SharedPreferences.getInstance();
-    setState(() {
-      _prophetReminderEnabled = prefs.getBool('notify_prophet') ?? true;
-      _prophetReminderInterval =
-          prefs.getString('notify_prophet_interval') ?? 'everyMinute';
-      _sunnahReminderEnabled = prefs.getBool('notify_sunnah') ?? true;
-      _quranReminderEnabled = prefs.getBool('notify_quran') ?? false;
-
-      final qHours = prefs.getInt('notify_quran_hour') ?? 21;
-      final qMinutes = prefs.getInt('notify_quran_minute') ?? 0;
-      _quranReminderTime = TimeOfDay(hour: qHours, minute: qMinutes);
-    });
-  }
-
-  Future<void> _saveSetting(String key, dynamic value) async {
-    final prefs = await SharedPreferences.getInstance();
-    if (value is bool) {
-      await prefs.setBool(key, value);
-    } else if (value is int) {
-      await prefs.setInt(key, value);
-    } else if (value is String) {
-      await prefs.setString(key, value);
-    }
-
-    // Refresh notifications configuration
-    if (key == 'notify_prophet' || key == 'notify_prophet_interval') {
-      if (_prophetReminderEnabled) {
-        // Use current state (or new value if passed, but key is split)
-        // If we just toggled to false, cancel. If true, schedule.
-        // If we changed interval, reschedule.
-
-        // We need the effective values
-        bool enabled = key == 'notify_prophet'
-            ? value
-            : _prophetReminderEnabled;
-        String intervalStr = key == 'notify_prophet_interval'
-            ? value
-            : _prophetReminderInterval;
-
-        if (enabled) {
-          RepeatInterval interval = RepeatInterval.everyMinute;
-          if (intervalStr == 'hourly') interval = RepeatInterval.hourly;
-          if (intervalStr == 'daily') interval = RepeatInterval.daily;
-          if (intervalStr == 'weekly') interval = RepeatInterval.weekly;
-
-          await NotificationService().scheduleProphetPrayerReminder(
-            interval: interval,
-          );
-        } else {
-          await NotificationService().cancelNotification(777);
-        }
-      } else {
-        // If enabled is false (and we didn't just turn it on), ensure it's cancelled
-        await NotificationService().cancelNotification(777);
-      }
-    }
-
-    // Quran Reminder Logic
-    if (key.startsWith('notify_quran')) {
-      // Get effective values
-      bool enabled = key == 'notify_quran' ? value : _quranReminderEnabled;
-      int hour = key == 'notify_quran_hour' ? value : _quranReminderTime.hour;
-      int minute = key == 'notify_quran_minute'
-          ? value
-          : _quranReminderTime.minute;
-
-      if (enabled) {
-        await NotificationService().scheduleQuranReminder(
-          time: TimeOfDay(hour: hour, minute: minute),
-        );
-      } else {
-        await NotificationService().cancelNotification(8888);
-      }
-    }
-  }
-
-  @override
   Widget build(BuildContext context) {
+    final notificationProv = context.watch<NotificationProvider>();
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('الإعدادات والتنبيهات'),
@@ -118,13 +26,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
           _buildSwitchTile(
             'التذكير بالصلاة على النبي ﷺ',
             'تفعيل التذكير الدوري',
-            _prophetReminderEnabled,
-            (val) {
-              setState(() => _prophetReminderEnabled = val);
-              _saveSetting('notify_prophet', val);
-            },
+            notificationProv.prophetReminderEnabled,
+            (val) => notificationProv.toggleProphetReminder(val),
           ),
-          if (_prophetReminderEnabled)
+          if (notificationProv.prophetReminderEnabled)
             Padding(
               padding: const EdgeInsets.symmetric(
                 horizontal: 16.0,
@@ -144,7 +49,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: DropdownButton<String>(
-                      value: _prophetReminderInterval,
+                      value: notificationProv.prophetReminderInterval,
                       underline: const SizedBox(),
                       icon: const Icon(
                         Icons.arrow_drop_down,
@@ -167,8 +72,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       ],
                       onChanged: (val) {
                         if (val != null) {
-                          setState(() => _prophetReminderInterval = val);
-                          _saveSetting('notify_prophet_interval', val);
+                          notificationProv.setProphetInterval(val);
                         }
                       },
                     ),
@@ -180,10 +84,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
           _buildSwitchTile(
             'تنبيهات سنن الصلوات',
             'تذكير بالنوافل والسنن الرواتب',
-            _sunnahReminderEnabled,
-            (val) {
-              setState(() => _sunnahReminderEnabled = val);
-              _saveSetting('notify_sunnah', val);
+            notificationProv.sunnahReminderEnabled,
+            (val) async {
+              await notificationProv.toggleSunnahReminder(val);
+              // Trigger reschedule in WorshipProvider
+              if (context.mounted) {
+                context.read<WorshipProvider>().loadEntries(DateTime.now());
+              }
             },
           ),
 
@@ -192,16 +99,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
           _buildSwitchTile(
             'تذكير الورد اليومي',
             'تنبيه يومي لقراءة وردك من القرآن',
-            _quranReminderEnabled,
-            (val) {
-              setState(() => _quranReminderEnabled = val);
-              _saveSetting('notify_quran', val);
-            },
+            notificationProv.quranReminderEnabled,
+            (val) => notificationProv.toggleQuranReminder(val),
           ),
-          if (_quranReminderEnabled)
+          if (notificationProv.quranReminderEnabled)
             ListTile(
               title: const Text('وقت التذكير'),
-              subtitle: Text(_formatTime(_quranReminderTime)),
+              subtitle: Text(_formatTime(notificationProv.quranReminderTime)),
               leading: const Icon(
                 Icons.access_time,
                 color: AppTheme.primaryEmerald,
@@ -209,29 +113,116 @@ class _SettingsScreenState extends State<SettingsScreen> {
               onTap: () async {
                 final createTime = await showTimePicker(
                   context: context,
-                  initialTime: _quranReminderTime,
+                  initialTime: notificationProv.quranReminderTime,
                 );
                 if (createTime != null) {
-                  setState(() => _quranReminderTime = createTime);
-                  await _saveSetting('notify_quran_hour', createTime.hour);
-                  await _saveSetting('notify_quran_minute', createTime.minute);
-                  // Reschedule logic would go here
+                  notificationProv.setQuranTime(createTime);
                 }
               },
             ),
 
           const Divider(height: 32),
-          _buildSectionHeader('العادات والمهام'),
-          ListTile(
-            title: const Text('تنبيهات المهام'),
-            subtitle: const Text(
-              'يتم ضبط التنبيه لكل مهمة على حدة عند إنشائها',
+          _buildSectionHeader('تنبيهات المهام'),
+          _buildSwitchTile(
+            'تذكير بالمهام',
+            'تنبيهات عشوائية للمهام على مدار اليوم',
+            notificationProv.tasksReminderEnabled,
+            (val) => notificationProv.toggleTasksReminder(val),
+          ),
+          if (notificationProv.tasksReminderEnabled)
+            Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 16.0,
+                vertical: 8.0,
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'عدد التنبيهات يومياً: ${notificationProv.tasksFrequency}',
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  Slider(
+                    value: notificationProv.tasksFrequency.toDouble(),
+                    min: 1,
+                    max: 10,
+                    divisions: 9,
+                    label: '${notificationProv.tasksFrequency}',
+                    activeColor: AppTheme.primaryEmerald,
+                    onChanged: (val) {
+                      // Visual feedback during drag
+                    },
+                    onChangeEnd: (val) {
+                      notificationProv.setTasksFrequency(val.round());
+                    },
+                  ),
+                ],
+              ),
             ),
-            leading: const Icon(
-              Icons.notifications_active_outlined,
-              color: Colors.grey,
+          const Divider(height: 32),
+          _buildSectionHeader('مشاركة التطبيق'),
+          Card(
+            elevation: 2,
+            margin: const EdgeInsets.symmetric(vertical: 8),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                children: [
+                  const Text(
+                    '«مَنْ دَلَّ عَلَى خَيْرٍ فَلَهُ مِثْلُ أَجْرِ فَاعِلِهِ»',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      fontFamily: 'Amiri',
+                      color: AppTheme.primaryEmerald,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'رواه مسلم',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.grey[600],
+                      fontFamily: 'Cairo',
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
+                      onPressed: () {
+                        _shareApp(context);
+                      },
+                      icon: const Icon(Icons.share_rounded),
+                      label: const Text(
+                        'شارك التطبيق مع الأصدقاء',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppTheme.primaryEmerald,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
+
+          const Divider(height: 32),
+          const SizedBox(height: 32),
         ],
       ),
     );
@@ -264,13 +255,36 @@ class _SettingsScreenState extends State<SettingsScreen> {
         style: const TextStyle(fontSize: 12, color: Colors.grey),
       ),
       value: value,
-      activeColor: AppTheme.primaryEmerald,
+      activeThumbColor: AppTheme.primaryEmerald,
       onChanged: onChanged,
     );
   }
 
   String _formatTime(TimeOfDay time) {
-    // Simple formatting
-    return "${time.hour}:${time.minute.toString().padLeft(2, '0')}";
+    final now = DateTime.now();
+    final dt = DateTime(now.year, now.month, now.day, time.hour, time.minute);
+    return DateFormat('h:mm a', 'ar').format(dt);
+  }
+
+  static void _shareApp(BuildContext context) {
+    const String shareMessage = '''
+السلام عليكم ورحمة الله وبركاته 🌙
+
+أحب أن أشارككم تطبيق "مخطط رمضان" - تطبيق إسلامي شامل يساعدك على:
+✅ تنظيم مهامك اليومية
+✅ متابعة أذكارك وعباداتك
+✅ مواقيت الصلاة والتنبيهات
+✅ ورد القرآن الكريم
+✅ تقييم يومك ومحاسبة النفس
+
+«مَنْ دَلَّ عَلَى خَيْرٍ فَلَهُ مِثْلُ أَجْرِ فَاعِلِهِ» - رواه مسلم
+
+حمّل التطبيق الآن وابدأ رحلتك الإيمانية! 🌟
+
+رابط التحميل:
+https://drive.google.com/file/d/11nLdAAS5LvQibFOeDk7GXYWKwraAUXEP/view?usp=drive_link
+''';
+
+    Share.share(shareMessage, subject: 'تطبيق مخطط رمضان - تطبيق إسلامي شامل');
   }
 }
