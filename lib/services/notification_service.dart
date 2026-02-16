@@ -1,9 +1,7 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:timezone/data/latest_all.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
-import 'package:flutter_timezone/flutter_timezone.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 class NotificationService {
@@ -20,15 +18,15 @@ class NotificationService {
     if (_isInitialized) return;
 
     const AndroidInitializationSettings initializationSettingsAndroid =
-        AndroidInitializationSettings('@mipmap/ic_launcher');
+        AndroidInitializationSettings('@drawable/ic_stat_moon');
 
     final InitializationSettings initializationSettings =
         InitializationSettings(android: initializationSettingsAndroid);
 
-    // Initialize timezones
-    tz.initializeTimeZones();
-    final String timeZoneName = await FlutterTimezone.getLocalTimezone();
-    tz.setLocalLocation(tz.getLocation(timeZoneName));
+    // Initialize timezones (handled in main.dart via notification_helper)
+    // but just in case, we can check if it's initialized effectively by try-catch or relying on main.
+    // robustly, we just leave it to main or re-init if needed (tz.initializeTimeZones handles re-calls fine usually)
+    // However, to be cleaner let's assume main did it.
 
     await _flutterLocalNotificationsPlugin.initialize(
       settings: initializationSettings,
@@ -94,6 +92,17 @@ class NotificationService {
         ),
       );
 
+      // Tasks Channel
+      await androidImplementation.createNotificationChannel(
+        const AndroidNotificationChannel(
+          'tasks_channel',
+          'المهام',
+          description: 'تنبيهات المهام اليومية',
+          importance: Importance.defaultImportance,
+          playSound: true,
+        ),
+      );
+
       // Follow-up Channel
       await androidImplementation.createNotificationChannel(
         const AndroidNotificationChannel(
@@ -130,6 +139,12 @@ class NotificationService {
       granted = await Permission.notification.request().isGranted;
     }
 
+    if (!granted) {
+      debugPrint('Notification permissions denied!');
+    } else {
+      debugPrint('Notification permissions granted.');
+    }
+
     // Also request exact alarm permission via permission_handler as secondary
     if (await Permission.scheduleExactAlarm.isDenied) {
       await Permission.scheduleExactAlarm.request();
@@ -162,7 +177,7 @@ class NotificationService {
             channelDescription: 'Notifications for prayer times',
             importance: Importance.max,
             priority: Priority.high,
-            icon: 'ic_notification_small',
+            color: Color(0xFF00A36C),
             actions: <AndroidNotificationAction>[
               AndroidNotificationAction(
                 'mark_as_prayed',
@@ -192,7 +207,6 @@ class NotificationService {
               channelDescription: 'Notifications for prayer times',
               importance: Importance.max,
               priority: Priority.high,
-              icon: 'ic_notification_small',
             ),
           ),
           androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
@@ -211,7 +225,7 @@ class NotificationService {
       channelDescription: 'Suggestions for Sunnah and Azkar after prayer',
       importance: Importance.defaultImportance,
       priority: Priority.defaultPriority,
-      icon: 'ic_notification_small',
+      color: Color(0xFF00A36C),
     );
 
     await _flutterLocalNotificationsPlugin.show(
@@ -240,7 +254,7 @@ class NotificationService {
           channelDescription: 'Periodic reminders for zikr',
           importance: Importance.low,
           priority: Priority.low,
-          icon: 'ic_notification_small',
+          color: Color(0xFF00A36C),
         ),
       ),
       androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
@@ -262,8 +276,7 @@ class NotificationService {
           channelDescription: 'Periodic reminders for zikr',
           importance: Importance.high,
           priority: Priority.high,
-          icon: 'ic_notification_small',
-          largeIcon: DrawableResourceAndroidBitmap('ic_notification_large'),
+          color: Color(0xFF00A36C),
         ),
       ),
       androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
@@ -299,8 +312,7 @@ class NotificationService {
           channelDescription: 'Daily reminder to read Quran',
           importance: Importance.high,
           priority: Priority.high,
-          icon: 'ic_notification_small',
-          largeIcon: DrawableResourceAndroidBitmap('ic_notification_large'),
+          color: Color(0xFF00A36C),
         ),
       ),
       androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
@@ -375,8 +387,7 @@ class NotificationService {
             channelDescription: 'Daily random reminders for good habits',
             importance: Importance.defaultImportance,
             priority: Priority.defaultPriority,
-            icon: 'ic_notification_small',
-            largeIcon: DrawableResourceAndroidBitmap('ic_notification_large'),
+            color: Color(0xFF00A36C),
           ),
         ),
         androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
@@ -431,13 +442,12 @@ class NotificationService {
         scheduledDate: tz.TZDateTime.from(scheduledDate, tz.local),
         notificationDetails: const NotificationDetails(
           android: AndroidNotificationDetails(
-            'good_habits_channel',
+            'tasks_channel',
             'Task Reminders',
             channelDescription: 'Daily random reminders for tasks',
             importance: Importance.defaultImportance,
             priority: Priority.defaultPriority,
-            icon: 'ic_notification_small',
-            largeIcon: DrawableResourceAndroidBitmap('ic_notification_large'),
+            color: Color(0xFF00A36C),
           ),
         ),
         androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
@@ -456,7 +466,7 @@ class NotificationService {
       channelDescription: 'تنبيه للتأكد من عمل الخدمة',
       importance: Importance.max,
       priority: Priority.high,
-      icon: 'ic_notification_small',
+      color: Color(0xFF00A36C),
     );
 
     await _flutterLocalNotificationsPlugin.show(
@@ -465,5 +475,6 @@ class NotificationService {
       body: body,
       notificationDetails: NotificationDetails(android: androidDetails),
     );
+    debugPrint('Immediate notification shown: $title');
   }
 }

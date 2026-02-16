@@ -149,6 +149,11 @@ class DatabaseHelper {
     return List.generate(maps.length, (i) => WorshipEntry.fromMap(maps[i]));
   }
 
+  Future<int> deleteWorship(int id) async {
+    Database db = await database;
+    return await db.delete('worship', where: 'id = ?', whereArgs: [id]);
+  }
+
   // Generic methods for Quran
   Future<int> insertQuranProgress(QuranProgress progress) async {
     Database db = await database;

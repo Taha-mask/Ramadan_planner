@@ -139,15 +139,15 @@ class SettingsScreen extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'عدد التنبيهات يومياً: ${notificationProv.tasksFrequency}',
+                    'عدد التنبيهات يومياً: ${notificationProv.tasksReminderFrequency}',
                     style: const TextStyle(fontWeight: FontWeight.bold),
                   ),
                   Slider(
-                    value: notificationProv.tasksFrequency.toDouble(),
+                    value: notificationProv.tasksReminderFrequency.toDouble(),
                     min: 1,
                     max: 10,
                     divisions: 9,
-                    label: '${notificationProv.tasksFrequency}',
+                    label: '${notificationProv.tasksReminderFrequency}',
                     activeColor: AppTheme.primaryEmerald,
                     onChanged: (val) {
                       // Visual feedback during drag
@@ -159,69 +159,39 @@ class SettingsScreen extends StatelessWidget {
                 ],
               ),
             ),
-          const Divider(height: 32),
-          _buildSectionHeader('مشاركة التطبيق'),
-          Card(
-            elevation: 2,
-            margin: const EdgeInsets.symmetric(vertical: 8),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                children: [
-                  const Text(
-                    '«مَنْ دَلَّ عَلَى خَيْرٍ فَلَهُ مِثْلُ أَجْرِ فَاعِلِهِ»',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      fontFamily: 'Amiri',
-                      color: AppTheme.primaryEmerald,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'رواه مسلم',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.grey[600],
-                      fontFamily: 'Cairo',
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton.icon(
-                      onPressed: () {
-                        _shareApp(context);
-                      },
-                      icon: const Icon(Icons.share_rounded),
-                      label: const Text(
-                        'شارك التطبيق مع الأصدقاء',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppTheme.primaryEmerald,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            child: ElevatedButton.icon(
+              onPressed: () {
+                const String shareText = """
+قال رسول الله ﷺ: (الدال على الخير كفاعله)
+شارك تطبيق "رفيق الصائم" لتنظيم عباداتك في رمضان!
+
+✨ مميزات التطبيق:
+✅ بدون إعلانات نهائياً (راحتك تهمنا)
+✅ مواقيت الصلاة دقيقة 🕌
+✅ أذكار وتنبيهات مخصصة 📿
+✅ ورد قرآني يومي 📖
+✅ متابعة العادات والمهام 📝
+
+حمله الآن وشاركه مع أحبابك!
+📥 رابط التحميل:
+https://drive.google.com/file/d/1_gjcx5ubK2dY9ySdjOhHfFqNVKw2Qe3j/view?usp=drive_link
+""";
+                Share.share(shareText);
+              },
+              icon: const Icon(Icons.share),
+              label: const Text('شارك التطبيق واكسب الأجر'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppTheme.primaryEmerald,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
               ),
             ),
           ),
-
-          const Divider(height: 32),
           const SizedBox(height: 32),
         ],
       ),
@@ -264,27 +234,5 @@ class SettingsScreen extends StatelessWidget {
     final now = DateTime.now();
     final dt = DateTime(now.year, now.month, now.day, time.hour, time.minute);
     return DateFormat('h:mm a', 'ar').format(dt);
-  }
-
-  static void _shareApp(BuildContext context) {
-    const String shareMessage = '''
-السلام عليكم ورحمة الله وبركاته 🌙
-
-أحب أن أشارككم تطبيق "مخطط رمضان" - تطبيق إسلامي شامل يساعدك على:
-✅ تنظيم مهامك اليومية
-✅ متابعة أذكارك وعباداتك
-✅ مواقيت الصلاة والتنبيهات
-✅ ورد القرآن الكريم
-✅ تقييم يومك ومحاسبة النفس
-
-«مَنْ دَلَّ عَلَى خَيْرٍ فَلَهُ مِثْلُ أَجْرِ فَاعِلِهِ» - رواه مسلم
-
-حمّل التطبيق الآن وابدأ رحلتك الإيمانية! 🌟
-
-رابط التحميل:
-https://drive.google.com/file/d/11nLdAAS5LvQibFOeDk7GXYWKwraAUXEP/view?usp=drive_link
-''';
-
-    Share.share(shareMessage, subject: 'تطبيق مخطط رمضان - تطبيق إسلامي شامل');
   }
 }

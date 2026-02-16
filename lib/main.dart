@@ -3,8 +3,9 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'theme/app_theme.dart';
 import 'screens/main_scaffold.dart';
-import 'package:intl/date_symbol_data_local.dart';
+
 import 'package:intl/intl.dart' hide TextDirection;
+import 'package:intl/date_symbol_data_local.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'dart:io';
 
@@ -17,6 +18,7 @@ import 'providers/theme_provider.dart';
 import 'providers/notification_provider.dart';
 import 'services/widget_service.dart';
 import 'services/notification_service.dart';
+import 'utils/notification_helper.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -34,10 +36,16 @@ void main() async {
   await tryInitializeDateFormatting();
   Intl.defaultLocale = 'ar';
 
-  // Initialize notification service early
+  // Initialize Timezones and Notifications Helper
+  await initializeNotificationsAndTimeZone();
+
+  // Initialize Notification Service (Strict Order)
   final notificationService = NotificationService();
   await notificationService.init();
   await notificationService.requestPermissions();
+
+  // Initialize HomeWidget
+  await WidgetService.init();
 
   runApp(
     MultiProvider(

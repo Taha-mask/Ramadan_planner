@@ -24,14 +24,27 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
+    // Update UI every second for the countdown
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      if (mounted) setState(() {});
-    });
-    Future.microtask(() {
       if (mounted) {
-        context.read<WorshipProvider>().loadEntries(DateTime.now());
+        setState(() {});
       }
     });
+
+    // Check for day change less frequently or on init
+    Future.microtask(() {
+      if (mounted) {
+        context.read<WorshipProvider>().checkDayChange();
+      }
+    });
+  }
+
+  // Monitor app lifecycle to refresh data when returning from background
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Ensure data is fresh when widget is verifiable
+    context.read<WorshipProvider>().checkDayChange();
   }
 
   @override

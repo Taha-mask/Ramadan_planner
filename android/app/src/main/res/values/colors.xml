@@ -9,6 +9,7 @@
     <color name="widget_text_inverse">#000000</color>
     
     <color name="widget_accent">#00A36C</color> <!-- Emerald Green -->
+    <color name="colorPrimary">#00A36C</color> <!-- App Primary Color for Notifications -->
     <color name="widget_gold">#FFD700</color> <!-- Gold -->
     <color name="widget_divider">#40FFFFFF</color> <!-- Light Divider -->
 </resources>

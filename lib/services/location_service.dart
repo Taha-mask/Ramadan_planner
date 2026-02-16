@@ -82,6 +82,7 @@ class LocationService {
         }
 
         await saveAddress(_currentAddress);
+        await _saveCoordinates(position.latitude, position.longitude);
       }
     } catch (e) {
       debugPrint("Error getting address: $e");
@@ -98,6 +99,26 @@ class LocationService {
     } catch (e) {
       debugPrint("Error saving address: $e");
     }
+  }
+
+  Future<void> _saveCoordinates(double lat, double lng) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setDouble('user_lat', lat);
+      await prefs.setDouble('user_lng', lng);
+    } catch (e) {
+      debugPrint("Error saving coordinates: $e");
+    }
+  }
+
+  Future<double?> getSavedLatitude() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getDouble('user_lat');
+  }
+
+  Future<double?> getSavedLongitude() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getDouble('user_lng');
   }
 
   Future<String?> getSavedAddress() async {

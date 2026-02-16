@@ -9,22 +9,18 @@ class NotificationProvider with ChangeNotifier {
   bool _prophetReminderEnabled = true;
   String _prophetReminderInterval = 'everyMinute';
   bool _sunnahReminderEnabled = true;
-  bool _quranReminderEnabled = false;
+  bool _quranReminderEnabled = true;
   TimeOfDay _quranReminderTime = const TimeOfDay(hour: 21, minute: 0);
-  bool _goodHabitsReminderEnabled = false;
-  int _goodHabitsFrequency = 1;
-  bool _tasksReminderEnabled = false;
-  int _tasksFrequency = 3;
+  bool _tasksReminderEnabled = true;
+  int _tasksReminderFrequency = 1;
 
   bool get prophetReminderEnabled => _prophetReminderEnabled;
   String get prophetReminderInterval => _prophetReminderInterval;
   bool get sunnahReminderEnabled => _sunnahReminderEnabled;
   bool get quranReminderEnabled => _quranReminderEnabled;
   TimeOfDay get quranReminderTime => _quranReminderTime;
-  bool get goodHabitsReminderEnabled => _goodHabitsReminderEnabled;
-  int get goodHabitsFrequency => _goodHabitsFrequency;
   bool get tasksReminderEnabled => _tasksReminderEnabled;
-  int get tasksFrequency => _tasksFrequency;
+  int get tasksReminderFrequency => _tasksReminderFrequency;
 
   NotificationProvider() {
     _loadSettings();
@@ -36,21 +32,19 @@ class NotificationProvider with ChangeNotifier {
     _prophetReminderInterval =
         prefs.getString('notify_prophet_interval') ?? 'everyMinute';
     _sunnahReminderEnabled = prefs.getBool('notify_sunnah') ?? true;
-    _quranReminderEnabled = prefs.getBool('notify_quran') ?? false;
+    _quranReminderEnabled = prefs.getBool('notify_quran') ?? true;
 
     final qHours = prefs.getInt('notify_quran_hour') ?? 21;
     final qMinutes = prefs.getInt('notify_quran_minute') ?? 0;
     _quranReminderTime = TimeOfDay(hour: qHours, minute: qMinutes);
 
-    _goodHabitsReminderEnabled = prefs.getBool('notify_good_habits') ?? false;
-    _goodHabitsFrequency = prefs.getInt('notify_good_habits_frequency') ?? 1;
+    _tasksReminderEnabled = prefs.getBool('notify_tasks') ?? true;
+    _tasksReminderFrequency = prefs.getInt('notify_tasks_frequency') ?? 1;
 
-    _tasksReminderEnabled = prefs.getBool('notify_tasks') ?? false;
-    _tasksFrequency = prefs.getInt('notify_tasks_frequency') ?? 3;
+    // Refresh all schedules to ensure they are active
+    await refreshAll();
 
     notifyListeners();
-    // Refresh all notifications to ensure they are scheduled on app start
-    await refreshAll();
   }
 
   Future<void> toggleProphetReminder(bool enabled) async {
@@ -108,7 +102,6 @@ class NotificationProvider with ChangeNotifier {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setInt('notify_quran_hour', time.hour);
     await prefs.setInt('notify_quran_minute', time.minute);
-    await prefs.commit(); // Ensure data is saved immediately
     await _updateQuranReminder();
     notifyListeners();
   }
@@ -123,29 +116,29 @@ class NotificationProvider with ChangeNotifier {
     }
   }
 
-  Future<void> toggleGoodHabitsReminder(bool enabled) async {
-    _goodHabitsReminderEnabled = enabled;
+  Future<void> toggleTasksReminder(bool enabled) async {
+    _tasksReminderEnabled = enabled;
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool('notify_good_habits', enabled);
-    await _updateGoodHabitsReminder();
+    await prefs.setBool('notify_tasks', enabled);
+    await _updateTasksReminder();
     notifyListeners();
   }
 
-  Future<void> setGoodHabitsFrequency(int frequency) async {
-    _goodHabitsFrequency = frequency;
+  Future<void> setTasksFrequency(int frequency) async {
+    _tasksReminderFrequency = frequency;
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setInt('notify_good_habits_frequency', frequency);
-    await _updateGoodHabitsReminder();
+    await prefs.setInt('notify_tasks_frequency', frequency);
+    await _updateTasksReminder();
     notifyListeners();
   }
 
-  Future<void> _updateGoodHabitsReminder() async {
-    if (_goodHabitsReminderEnabled) {
-      await _notificationService.scheduleRandomHabitReminders(
-        frequency: _goodHabitsFrequency,
+  Future<void> _updateTasksReminder() async {
+    if (_tasksReminderEnabled) {
+      await _notificationService.scheduleRandomTaskReminders(
+        frequency: _tasksReminderFrequency,
       );
     } else {
-      await _notificationService.scheduleRandomHabitReminders(frequency: 0);
+      await _notificationService.scheduleRandomTaskReminders(frequency: 0);
     }
   }
 
@@ -172,37 +165,10 @@ class NotificationProvider with ChangeNotifier {
     }
   }
 
-  Future<void> toggleTasksReminder(bool enabled) async {
-    _tasksReminderEnabled = enabled;
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool('notify_tasks', enabled);
-    await _updateTasksReminder();
-    notifyListeners();
-  }
-
-  Future<void> setTasksFrequency(int frequency) async {
-    _tasksFrequency = frequency;
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setInt('notify_tasks_frequency', frequency);
-    await _updateTasksReminder();
-    notifyListeners();
-  }
-
-  Future<void> _updateTasksReminder() async {
-    if (_tasksReminderEnabled) {
-      await _notificationService.scheduleRandomTaskReminders(
-        frequency: _tasksFrequency,
-      );
-    } else {
-      await _notificationService.scheduleRandomTaskReminders(frequency: 0);
-    }
-  }
-
   // Helper to trigger all on app start or settings refresh
   Future<void> refreshAll() async {
     await _updateProphetReminder();
     await _updateQuranReminder();
-    await _updateGoodHabitsReminder();
     await _updateTasksReminder();
   }
 }

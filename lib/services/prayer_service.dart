@@ -12,14 +12,28 @@ class PrayerService {
   Coordinates _coordinates = Coordinates(_defaultLat, _defaultLong);
 
   // Update coordinates from LocationService
-  Future<void> initLocation() async {
+  Future<bool> initLocation() async {
     try {
       final position = await LocationService().determinePosition();
       if (position != null) {
         _coordinates = Coordinates(position.latitude, position.longitude);
+        return true;
       }
     } catch (e) {
       debugPrint("Error initializing location: $e");
+    }
+    return false;
+  }
+
+  Future<void> loadCachedLocation() async {
+    try {
+      final savedLat = await LocationService().getSavedLatitude();
+      final savedLng = await LocationService().getSavedLongitude();
+      if (savedLat != null && savedLng != null) {
+        _coordinates = Coordinates(savedLat, savedLng);
+      }
+    } catch (e) {
+      debugPrint("Error loading cached location: $e");
     }
   }
 
