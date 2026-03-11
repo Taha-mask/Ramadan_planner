@@ -74,7 +74,7 @@ class HistoryProvider with ChangeNotifier {
     final db = DatabaseHelper();
     List<DailyEntry> tempHistory = [];
 
-    for (int i = 0; i < 30; i++) {
+    for (int i = 0; i < 90; i++) {
       String date = DateFormat(
         'yyyy-MM-dd',
       ).format(DateTime.now().subtract(Duration(days: i)));

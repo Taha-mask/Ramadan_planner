@@ -5,6 +5,9 @@ import 'package:intl/intl.dart';
 import '../providers/notification_provider.dart';
 import '../providers/worship_provider.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:url_launcher/url_launcher.dart';
+import '../utils/localization_helper.dart';
+import '../providers/locale_provider.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
@@ -12,20 +15,25 @@ class SettingsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final notificationProv = context.watch<NotificationProvider>();
+    final localeProvider = context.watch<LocaleProvider>();
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('الإعدادات والتنبيهات'),
+        title: Text('الإعدادات والتنبيهات'.tr(context)),
         backgroundColor: AppTheme.primaryEmerald,
         foregroundColor: Colors.white,
       ),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          _buildSectionHeader('تنبيهات الصلاة'),
+          _buildSectionHeader('اللغة'.tr(context), context),
+          _buildLanguageSelector(context, localeProvider),
+          const Divider(height: 32),
+          
+          _buildSectionHeader('تنبيهات الصلاة'.tr(context), context),
           _buildSwitchTile(
-            'التذكير بالصلاة على النبي ﷺ',
-            'تفعيل التذكير الدوري',
+            'التذكير بالصلاة على النبي ﷺ'.tr(context),
+            'تفعيل التذكير الدوري'.tr(context),
             notificationProv.prophetReminderEnabled,
             (val) => notificationProv.toggleProphetReminder(val),
           ),
@@ -37,9 +45,9 @@ class SettingsScreen extends StatelessWidget {
               ),
               child: Row(
                 children: [
-                  const Text(
-                    'التكرار:',
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                  Text(
+                    'التكرار:'.tr(context),
+                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                   ),
                   const Spacer(),
                   Container(
@@ -55,19 +63,22 @@ class SettingsScreen extends StatelessWidget {
                         Icons.arrow_drop_down,
                         color: AppTheme.primaryEmerald,
                       ),
-                      items: const [
+                      items: [
                         DropdownMenuItem(
                           value: 'everyMinute',
-                          child: Text('كل دقيقة'),
+                          child: Text('كل دقيقة'.tr(context)),
                         ),
                         DropdownMenuItem(
                           value: 'hourly',
-                          child: Text('كل ساعة'),
+                          child: Text('كل ساعة'.tr(context)),
                         ),
-                        DropdownMenuItem(value: 'daily', child: Text('كل يوم')),
+                        DropdownMenuItem(
+                          value: 'daily',
+                          child: Text('كل يوم'.tr(context))
+                        ),
                         DropdownMenuItem(
                           value: 'weekly',
-                          child: Text('كل أسبوع'),
+                          child: Text('كل أسبوع'.tr(context)),
                         ),
                       ],
                       onChanged: (val) {
@@ -82,8 +93,8 @@ class SettingsScreen extends StatelessWidget {
             ),
 
           _buildSwitchTile(
-            'تنبيهات سنن الصلوات',
-            'تذكير بالنوافل والسنن الرواتب',
+            'تنبيهات سنن الصلوات'.tr(context),
+            'تذكير بالنوافل والسنن الرواتب'.tr(context),
             notificationProv.sunnahReminderEnabled,
             (val) async {
               await notificationProv.toggleSunnahReminder(val);
@@ -95,17 +106,17 @@ class SettingsScreen extends StatelessWidget {
           ),
 
           const Divider(height: 32),
-          _buildSectionHeader('الورد القرآني'),
+          _buildSectionHeader('الورد القرآني'.tr(context), context),
           _buildSwitchTile(
-            'تذكير الورد اليومي',
-            'تنبيه يومي لقراءة وردك من القرآن',
+            'تذكير الورد اليومي'.tr(context),
+            'تنبيه يومي لقراءة وردك من القرآن'.tr(context),
             notificationProv.quranReminderEnabled,
             (val) => notificationProv.toggleQuranReminder(val),
           ),
           if (notificationProv.quranReminderEnabled)
             ListTile(
-              title: const Text('وقت التذكير'),
-              subtitle: Text(_formatTime(notificationProv.quranReminderTime)),
+              title: Text('وقت التذكير'.tr(context)),
+              subtitle: Text(_formatTime(notificationProv.quranReminderTime, localeProvider)),
               leading: const Icon(
                 Icons.access_time,
                 color: AppTheme.primaryEmerald,
@@ -122,10 +133,10 @@ class SettingsScreen extends StatelessWidget {
             ),
 
           const Divider(height: 32),
-          _buildSectionHeader('تنبيهات المهام'),
+          _buildSectionHeader('تنبيهات المهام'.tr(context), context),
           _buildSwitchTile(
-            'تذكير بالمهام',
-            'تنبيهات عشوائية للمهام على مدار اليوم',
+            'تذكير بالمهام'.tr(context),
+            'تنبيهات عشوائية للمهام على مدار اليوم'.tr(context),
             notificationProv.tasksReminderEnabled,
             (val) => notificationProv.toggleTasksReminder(val),
           ),
@@ -139,7 +150,7 @@ class SettingsScreen extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'عدد التنبيهات يومياً: ${notificationProv.tasksReminderFrequency}',
+                    '${'عدد التنبيهات يومياً: '.tr(context)}${notificationProv.tasksReminderFrequency}',
                     style: const TextStyle(fontWeight: FontWeight.bold),
                   ),
                   Slider(
@@ -181,7 +192,7 @@ https://drive.google.com/file/d/1_gjcx5ubK2dY9ySdjOhHfFqNVKw2Qe3j/view?usp=drive
                 Share.share(shareText);
               },
               icon: const Icon(Icons.share),
-              label: const Text('شارك التطبيق واكسب الأجر'),
+              label: Text('شارك التطبيق واكسب الأجر'.tr(context)),
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppTheme.primaryEmerald,
                 foregroundColor: Colors.white,
@@ -192,13 +203,108 @@ https://drive.google.com/file/d/1_gjcx5ubK2dY9ySdjOhHfFqNVKw2Qe3j/view?usp=drive
               ),
             ),
           ),
+          const SizedBox(height: 24),
+          Center(
+            child: Column(
+              children: [
+                Text(
+                  'تصميم وتطوير'.tr(context),
+                  style: TextStyle(color: Colors.grey[600], fontSize: 12),
+                ),
+                const SizedBox(height: 4),
+                const Text(
+                  'Taha Mahmoud Ahmed',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                    color: AppTheme.primaryEmerald,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                InkWell(
+                  borderRadius: BorderRadius.circular(20),
+                  onTap: () async {
+                    final Uri launchUri = Uri(
+                      scheme: 'tel',
+                      path: '01120927249',
+                    );
+                    if (await canLaunchUrl(launchUri)) {
+                      await launchUrl(launchUri);
+                    }
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 8,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppTheme.primaryEmerald.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(
+                          Icons.phone,
+                          size: 16,
+                          color: AppTheme.primaryEmerald,
+                        ),
+                        const SizedBox(width: 8),
+                        const Text(
+                          '01120927249',
+                          style: TextStyle(
+                            color: AppTheme.primaryEmerald,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'تواصل معنا للدعم الفني والاقتراحات'.tr(context),
+                  style: TextStyle(color: Colors.grey[500], fontSize: 10),
+                ),
+              ],
+            ),
+          ),
           const SizedBox(height: 32),
         ],
       ),
     );
   }
 
-  Widget _buildSectionHeader(String title) {
+  Widget _buildLanguageSelector(BuildContext context, LocaleProvider provider) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+      child: SegmentedButton<String>(
+        segments: const [
+          ButtonSegment(
+            value: 'ar',
+            label: Text('العربية'),
+          ),
+          ButtonSegment(
+            value: 'en',
+            label: Text('English'),
+          ),
+          ButtonSegment(
+            value: 'id',
+            label: Text('Indonesia'),
+          ),
+        ],
+        selected: {provider.locale.languageCode},
+        onSelectionChanged: (Set<String> newSelection) {
+          provider.setLocale(Locale(newSelection.first));
+        },
+        style: ButtonStyle(
+          visualDensity: VisualDensity.compact,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSectionHeader(String title, BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: Text(
@@ -230,9 +336,9 @@ https://drive.google.com/file/d/1_gjcx5ubK2dY9ySdjOhHfFqNVKw2Qe3j/view?usp=drive
     );
   }
 
-  String _formatTime(TimeOfDay time) {
+  String _formatTime(TimeOfDay time, LocaleProvider localeProvider) {
     final now = DateTime.now();
     final dt = DateTime(now.year, now.month, now.day, time.hour, time.minute);
-    return DateFormat('h:mm a', 'ar').format(dt);
+    return DateFormat('h:mm a', localeProvider.locale.languageCode).format(dt);
   }
 }

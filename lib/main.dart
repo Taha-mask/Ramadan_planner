@@ -16,6 +16,7 @@ import 'providers/assessment_provider.dart';
 import 'providers/statistics_provider.dart';
 import 'providers/theme_provider.dart';
 import 'providers/notification_provider.dart';
+import 'providers/locale_provider.dart';
 import 'services/widget_service.dart';
 import 'services/notification_service.dart';
 import 'utils/notification_helper.dart';
@@ -51,6 +52,7 @@ void main() async {
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => ThemeProvider()),
+        ChangeNotifierProvider(create: (_) => LocaleProvider()),
         ChangeNotifierProvider(create: (_) => NotificationProvider()),
         ChangeNotifierProvider(create: (_) => WorshipProvider()),
         ChangeNotifierProvider(create: (_) => QuranProvider()),
@@ -85,6 +87,11 @@ class RamadanPlanner extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final themeProvider = context.watch<ThemeProvider>();
+    final localeProvider = context.watch<LocaleProvider>();
+    
+    // Set intl locale for date formatting
+    Intl.defaultLocale = localeProvider.locale.languageCode;
+
     return MaterialApp(
       title: 'Ramadan Planner',
       debugShowCheckedModeBanner: false,
@@ -94,7 +101,7 @@ class RamadanPlanner extends StatelessWidget {
       home: const MainScaffold(),
       builder: (context, child) {
         return Directionality(
-          textDirection: TextDirection.rtl, // Set default to Arabic RTL
+          textDirection: localeProvider.isRtl ? TextDirection.rtl : TextDirection.ltr,
           child: child!,
         );
       },

@@ -174,10 +174,12 @@ class _HomeScreenState extends State<HomeScreen> {
                 _buildPrayerList(
                   worshipProvider,
                   worshipProvider.faraidEntries,
+                  isSunnah: false,
                 ),
                 _buildPrayerList(
                   worshipProvider,
                   worshipProvider.sunnahEntries,
+                  isSunnah: true,
                 ),
               ],
             ),
@@ -339,13 +341,17 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildPrayerList(WorshipProvider provider, List<dynamic> entries) {
+  Widget _buildPrayerList(
+    WorshipProvider provider,
+    List<dynamic> entries, {
+    required bool isSunnah,
+  }) {
     return ListView.builder(
       padding: const EdgeInsets.fromLTRB(20, 20, 20, 100),
       itemCount: entries.length + 1, // +1 for spiritual card
       itemBuilder: (context, index) {
         if (index == 0) {
-          return _buildSpiritualInsightCard();
+          return _buildSpiritualInsightCard(isSunnah: isSunnah);
         }
         final entry = entries[index - 1];
         return _buildModernPrayerItem(provider, entry);
@@ -353,7 +359,12 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildSpiritualInsightCard() {
+  Widget _buildSpiritualInsightCard({required bool isSunnah}) {
+    final title = isSunnah ? 'فضائل السنن' : 'إقامة الصلاة';
+    final text = isSunnah
+        ? 'قال رسول الله ﷺ: "مَنْ صَلَّى فِي يَوْمٍ وَلَيْلَةٍ ثِنْتَيْ عَشْرَةَ رَكْعَةً تَطَوُّعًا غَيْرَ فَرِيضَةٍ بَنَى اللَّهُ لَهُ بَيْتًا فِي الْجَنَّةِ"'
+        : '۞ وَأَقِمِ الصَّلَاةَ ۖ إِنَّ الصَّلَاةَ تَنْهَىٰ عَنِ الْفَحْشَاءِ وَالْمُنكَرِ ۗ وَلَذِكْرُ اللَّهِ أَكْبَرُ ۗ وَاللَّهُ يَعْلَمُ مَا تَصْنَعُونَ ۞';
+
     return Container(
       margin: const EdgeInsets.only(bottom: 20),
       padding: const EdgeInsets.all(20),
@@ -379,9 +390,9 @@ class _HomeScreenState extends State<HomeScreen> {
                 size: 20,
               ),
               const SizedBox(width: 8),
-              const Text(
-                'خاطرة اليوم',
-                style: TextStyle(
+              Text(
+                title,
+                style: const TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 16,
                   color: AppTheme.primaryEmerald,
@@ -390,10 +401,10 @@ class _HomeScreenState extends State<HomeScreen> {
             ],
           ),
           const SizedBox(height: 12),
-          const Text(
-            ' "الصلاة هي عماد الدين، فمن أقامها فقد أقام الدين، ومن هدمها فقد هدم الدين" ',
+          Text(
+            text,
             textAlign: TextAlign.center,
-            style: TextStyle(
+            style: const TextStyle(
               fontSize: 15,
               fontStyle: FontStyle.italic,
               fontFamily: 'Amiri',

@@ -102,12 +102,17 @@ class LessonsScreen extends StatelessWidget {
     ),
     Lesson(
       title: 'أمجد سمير',
-      url: 'https://www.youtube.com/@AmgadSamir',
+      url: 'https://youtube.com/@amgad_samir?si=510KfOdYfssewdF8',
       type: LessonType.channel,
     ),
     Lesson(
       title: 'د/ حازم شومان',
       url: 'https://www.youtube.com/@DrHazemShouman',
+      type: LessonType.channel,
+    ),
+    Lesson(
+      title: 'علاء حامد',
+      url: 'https://www.youtube.com/@3laaHamed',
       type: LessonType.channel,
     ),
   ];
@@ -162,12 +167,13 @@ class LessonsScreen extends StatelessWidget {
             const SizedBox(height: 24),
             _buildSectionTitle('قنوات مقترحة', Icons.smart_display),
             const SizedBox(height: 8),
-            Wrap(
-              spacing: 16,
-              runSpacing: 16,
-              alignment: WrapAlignment.start,
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: channels
-                  .map((l) => _buildChannelItem(l, context, isDark))
+                  .map(
+                    (l) =>
+                        Expanded(child: _buildChannelItem(l, context, isDark)),
+                  )
                   .toList(),
             ),
 
@@ -398,8 +404,8 @@ class LessonsScreen extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 8),
-          SizedBox(
-            width: 80,
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 4),
             child: Text(
               lesson.title,
               textAlign: TextAlign.center,

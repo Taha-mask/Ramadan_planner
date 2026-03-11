@@ -64,7 +64,9 @@ class PrayerWidgetProvider : HomeWidgetProvider() {
             if (nextPrayerMillis > now) {
                 views.setChronometer(R.id.chronometer_countdown, SystemClock.elapsedRealtime() + (nextPrayerMillis - now), null, true)
                 views.setViewVisibility(R.id.chronometer_countdown, View.VISIBLE)
-                views.setChronometerCountDown(R.id.chronometer_countdown, true)
+                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
+                    views.setChronometerCountDown(R.id.chronometer_countdown, true)
+                }
             } else {
                  views.setTextViewText(R.id.chronometer_countdown, "--:--:--")
             }

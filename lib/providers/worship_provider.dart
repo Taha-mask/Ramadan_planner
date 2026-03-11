@@ -12,6 +12,7 @@ class WorshipProvider with ChangeNotifier {
   final NotificationService _notificationService = NotificationService();
 
   DateTime? _lastLoadDate;
+  bool _isLoading = false;
 
   WorshipProvider() {
     _initNotifications();
@@ -31,7 +32,7 @@ class WorshipProvider with ChangeNotifier {
 
   final List<String> _sunnahNames = [
     'تهجد',
-    'صبح',
+    'سنة الفجر',
     'ضحى',
     'ظهر (سنة قبلية)',
     'ظهر (سنة بعدية)',
@@ -41,8 +42,8 @@ class WorshipProvider with ChangeNotifier {
 
   final List<String> _allNamesOrdered = [
     'تهجد',
+    'سنة الفجر',
     'فجر',
-    'صبح',
     'ضحى',
     'ظهر (سنة قبلية)',
     'ظهر (فرض)',
@@ -104,89 +105,97 @@ class WorshipProvider with ChangeNotifier {
   }
 
   Future<void> loadEntries(DateTime date) async {
-    // 1. Try to load cached location immediately for instant UI
-    await _prayerService.loadCachedLocation();
+    if (_isLoading) return;
+    _isLoading = true;
 
-    // 2. Trigger background update for fresh location (fire and forget or separate async)
-    _prayerService.initLocation().then((success) {
-      if (success && _lastLoadDate != null) {
-        // If location changed significantly, we might want to reload
-        // For now, this ensures next load uses fresh data
-        notifyListeners();
-      }
-    });
+    try {
+      // 1. Try to load cached location immediately for instant UI
+      await _prayerService.loadCachedLocation();
 
-    _lastLoadDate = date;
-    String formattedDate = DateFormat('yyyy-MM-dd').format(date);
-    _entries = await DatabaseHelper().getWorshipByDate(formattedDate);
-
-    // 1. Identify and remove duplicates
-    final Map<String, List<WorshipEntry>> grouped = {};
-    for (var entry in _entries) {
-      if (!grouped.containsKey(entry.prayerName)) {
-        grouped[entry.prayerName] = [];
-      }
-      grouped[entry.prayerName]!.add(entry);
-    }
-
-    bool duplicatesRemoved = false;
-    for (var name in grouped.keys) {
-      if (grouped[name]!.length > 1) {
-        // Sort: Privitize completed, then by ID (older first usually, or just pick one)
-        grouped[name]!.sort((a, b) {
-          if (a.isCompleted != b.isCompleted) {
-            return a.isCompleted ? -1 : 1; // Keep completed
-          }
-          return 0;
-        });
-
-        // Keep the first one, delete the rest
-        final toDelete = grouped[name]!.sublist(1);
-        for (var clean in toDelete) {
-          if (clean.id != null) {
-            await DatabaseHelper().deleteWorship(clean.id!);
-          }
+      // 2. Trigger background update for fresh location (fire and forget or separate async)
+      _prayerService.initLocation().then((success) {
+        if (success && _lastLoadDate != null) {
+          // If location changed significantly, we might want to reload
+          // For now, this ensures next load uses fresh data
+          notifyListeners();
         }
-        duplicatesRemoved = true;
-      }
-    }
+      });
 
-    // Reload if we cleaned up
-    if (duplicatesRemoved) {
+      _lastLoadDate = date;
+      String formattedDate = DateFormat('yyyy-MM-dd').format(date);
       _entries = await DatabaseHelper().getWorshipByDate(formattedDate);
-    }
 
-    // 2. Add missing prayers
-    if (_entries.length < _allNamesOrdered.length) {
-      for (String name in _allNamesOrdered) {
-        if (!_entries.any((e) => e.prayerName == name)) {
-          WorshipEntry newEntry = WorshipEntry(
-            date: formattedDate,
-            prayerName: name,
-          );
-          await DatabaseHelper().insertWorship(newEntry);
+      // 1. Identify and remove duplicates
+      final Map<String, List<WorshipEntry>> grouped = {};
+      for (var entry in _entries) {
+        if (!grouped.containsKey(entry.prayerName)) {
+          grouped[entry.prayerName] = [];
+        }
+        grouped[entry.prayerName]!.add(entry);
+      }
+
+      bool duplicatesRemoved = false;
+      for (var name in grouped.keys) {
+        if (grouped[name]!.length > 1) {
+          // Sort: Privitize completed, then by ID (older first usually, or just pick one)
+          grouped[name]!.sort((a, b) {
+            if (a.isCompleted != b.isCompleted) {
+              return a.isCompleted ? -1 : 1; // Keep completed
+            }
+            return 0;
+          });
+
+          // Keep the first one, delete the rest
+          final toDelete = grouped[name]!.sublist(1);
+          for (var clean in toDelete) {
+            if (clean.id != null) {
+              await DatabaseHelper().deleteWorship(clean.id!);
+            }
+          }
+          duplicatesRemoved = true;
         }
       }
-      _entries = await DatabaseHelper().getWorshipByDate(formattedDate);
+
+      // Reload if we cleaned up
+      if (duplicatesRemoved) {
+        _entries = await DatabaseHelper().getWorshipByDate(formattedDate);
+      }
+
+      // 2. Add missing prayers
+      if (_entries.length < _allNamesOrdered.length) {
+        for (String name in _allNamesOrdered) {
+          if (!_entries.any((e) => e.prayerName == name)) {
+            WorshipEntry newEntry = WorshipEntry(
+              date: formattedDate,
+              prayerName: name,
+            );
+            await DatabaseHelper().insertWorship(newEntry);
+          }
+        }
+        _entries = await DatabaseHelper().getWorshipByDate(formattedDate);
+      }
+
+      final faraidTimes = _prayerService.getFaraidTimes(date);
+      final sunnahTimes = _prayerService.getSunnahTimes(date);
+      final allTimes = {...faraidTimes, ...sunnahTimes};
+
+      _entries = _entries.map((e) {
+        return e.copyWith(time: allTimes[e.prayerName]);
+      }).toList();
+
+      _entries.sort(
+        (a, b) => _allNamesOrdered
+            .indexOf(a.prayerName)
+            .compareTo(_allNamesOrdered.indexOf(b.prayerName)),
+      );
+
+      notifyListeners();
+      _updateWidget();
+      _updateWidget();
+      _scheduleAllNotifications();
+    } finally {
+      _isLoading = false;
     }
-
-    final faraidTimes = _prayerService.getFaraidTimes(date);
-    final sunnahTimes = _prayerService.getSunnahTimes(date);
-    final allTimes = {...faraidTimes, ...sunnahTimes};
-
-    _entries = _entries.map((e) {
-      return e.copyWith(time: allTimes[e.prayerName]);
-    }).toList();
-
-    _entries.sort(
-      (a, b) => _allNamesOrdered
-          .indexOf(a.prayerName)
-          .compareTo(_allNamesOrdered.indexOf(b.prayerName)),
-    );
-
-    notifyListeners();
-    _updateWidget();
-    _scheduleAllNotifications();
   }
 
   Future<void> _scheduleAllNotifications() async {

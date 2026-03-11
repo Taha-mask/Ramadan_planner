@@ -36,7 +36,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
     final DateTime? picked = await showDatePicker(
       context: context,
       initialDate: DateTime.now(),
-      firstDate: DateTime(2024),
+      firstDate: DateTime(2023),
       lastDate: DateTime.now(),
       locale: const Locale('ar'),
     );
@@ -253,7 +253,10 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
         return entry.date.contains(_searchQuery) ||
             formattedDate.contains(_searchQuery) ||
             (entry.assessment?.notes.contains(_searchQuery) ?? false) ||
-            (entry.assessment?.dua.contains(_searchQuery) ?? false);
+            (entry.assessment?.dua.contains(_searchQuery) ?? false) ||
+            entry.tasks.any(
+              (t) => t.title.contains(_searchQuery),
+            ); // Search in tasks
       }).toList();
     }
 

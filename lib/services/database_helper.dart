@@ -23,7 +23,7 @@ class DatabaseHelper {
     String path = join(await getDatabasesPath(), 'ramadan_planner.db');
     return await openDatabase(
       path,
-      version: 5,
+      version: 7,
       onCreate: _onCreate,
       onUpgrade: _onUpgrade,
     );
@@ -75,6 +75,35 @@ class DatabaseHelper {
     if (oldVersion < 5) {
       // Add type to todos
       await db.execute("ALTER TABLE todos ADD COLUMN type TEXT DEFAULT 'todo'");
+    }
+    if (oldVersion < 6) {
+      // 1. Clean up duplicates (keep the one that isCompleted, or the latet one)
+      // We can't easily do complex logic in SQL alone for "isCompleted" preference without a complex query
+      // So we will just keep the MAX id for each (date, prayerName) tuple
+      // But we prefer completed ones.
+      // Let's first delete incomplete duplicates where a completed one exists
+      await db.execute('''
+        DELETE FROM worship 
+        WHERE id NOT IN (
+          SELECT MAX(id) 
+          FROM worship 
+          GROUP BY date, prayerName
+        )
+      ''');
+
+      // 2. Add Unique Index
+      await db.execute('''
+        CREATE UNIQUE INDEX IF NOT EXISTS idx_worship_date_name 
+        ON worship(date, prayerName)
+      ''');
+    }
+    if (oldVersion < 7) {
+      // Rename 'صبح' to 'سنة الفجر'
+      await db.execute('''
+        UPDATE worship 
+        SET prayerName = 'سنة الفجر' 
+        WHERE prayerName = 'صبح'
+      ''');
     }
   }
 

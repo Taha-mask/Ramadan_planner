@@ -18,7 +18,7 @@
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:gravity="center_vertical"
-            android:layout_marginBottom="4dp">
+            android:layout_marginBottom="8dp">
 
             <ImageView
                 android:layout_width="16dp"
@@ -33,15 +33,15 @@
                 android:layout_height="wrap_content"
                 android:text="Thu, Feb 12 • Sha'ban 24"
                 android:textColor="@android:color/white"
-                android:textSize="14sp"
+                android:textSize="12sp"
                 android:fontFamily="sans-serif"/>
         </LinearLayout>
 
         
 
-        <!-- Location Row -->
+        <!-- Location Row with Clock -->
         <LinearLayout
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:gravity="center_vertical">
@@ -59,19 +59,14 @@
                 android:layout_height="wrap_content"
                 android:text="Cairo"
                 android:textColor="@android:color/white"
-                android:textSize="12sp"
+                android:textSize="11sp"
                 android:fontFamily="sans-serif"/>
 
-
-        </LinearLayout>
-
-        <!-- Countdown Row (Aligned Right) -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="end|center_vertical"
-            android:layout_marginBottom="4dp">
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text=""/>
 
              <Chronometer
                 android:id="@+id/chronometer_countdown"
@@ -79,27 +74,29 @@
                 android:layout_height="wrap_content"
                 android:countDown="true"
                 android:textColor="@android:color/white"
-                android:textSize="14sp"
+                android:textSize="11sp"
                 android:textStyle="bold"
                 android:fontFamily="monospace"/>
+
         </LinearLayout>
+
     </LinearLayout>
 
     <!-- Right Container (Highlighted Prayer) -->
     <LinearLayout
         android:id="@+id/right_container"
-        android:layout_width="100dp"
+        android:layout_width="120dp"
         android:layout_height="match_parent"
         android:layout_alignParentEnd="true"
         android:layout_marginStart="16dp"
         android:background="@drawable/bg_prayer_highlight"
         android:orientation="vertical"
         android:gravity="center"
-        android:paddingStart="24dp"
-        android:paddingEnd="24dp"
-        android:paddingTop="12dp"
-        android:paddingBottom="12dp"
-        android:minWidth="100dp">
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:paddingTop="8dp"
+        android:paddingBottom="8dp"
+        android:minWidth="140dp">
 
         <TextView
             android:id="@+id/tv_next_prayer_name"
@@ -107,7 +104,7 @@
             android:layout_height="wrap_content"
             android:text="Dhuhr"
             android:textColor="@android:color/white"
-            android:textSize="16sp"
+            android:textSize="14sp"
             android:textStyle="bold"
             android:fontFamily="sans-serif-medium"/>
 
@@ -117,7 +114,7 @@
             android:layout_height="wrap_content"
             android:text="12:11"
             android:textColor="@android:color/white"
-            android:textSize="18sp"
+            android:textSize="16sp"
             android:textStyle="bold"
             android:fontFamily="sans-serif-black"/>
 

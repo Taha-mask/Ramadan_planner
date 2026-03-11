@@ -69,8 +69,8 @@ class PrayerService {
     final prayerTimes = getPrayerTimes(date);
 
     return {
-      'تهجد': prayerTimes.fajr.subtract(const Duration(minutes: 45)), // Approx
-      'صبح': prayerTimes.sunrise, // Shorooq
+      'تهجد': DateTime(date.year, date.month, date.day, 1, 30),
+      'سنة الفجر': prayerTimes.fajr,
       'ضحى': prayerTimes.sunrise.add(const Duration(minutes: 20)),
       'ظهر (سنة قبلية)': prayerTimes.dhuhr.subtract(
         const Duration(minutes: 10),

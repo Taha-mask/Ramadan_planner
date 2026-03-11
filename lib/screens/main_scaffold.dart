@@ -6,6 +6,7 @@ import 'statistics_screen.dart';
 import 'lessons_screen.dart';
 
 import '../services/notification_service.dart';
+import '../utils/localization_helper.dart';
 
 class MainScaffold extends StatefulWidget {
   const MainScaffold({super.key});
@@ -65,28 +66,28 @@ class _MainScaffoldState extends State<MainScaffold> {
             BottomNavigationBarItem(
               icon: Icon(Icons.access_time_outlined),
               activeIcon: Icon(Icons.access_time_filled),
-              label: 'الصلوات',
+              label: 'الصلوات'.tr(context),
             ),
             BottomNavigationBarItem(
               icon: Icon(Icons.menu_book_outlined),
               activeIcon: Icon(Icons.menu_book),
-              label: 'الورد',
+              label: 'الورد'.tr(context),
             ),
             BottomNavigationBarItem(
               icon: Icon(Icons.assignment_outlined),
               activeIcon: Icon(Icons.assignment),
-              label: 'المهام',
+              label: 'المهام'.tr(context),
             ),
       
             BottomNavigationBarItem(
               icon: Icon(Icons.video_library_outlined),
               activeIcon: Icon(Icons.video_library_rounded),
-              label: 'الدروس',
+              label: 'الدروس'.tr(context),
             ),
             BottomNavigationBarItem(
               icon: Icon(Icons.history_outlined),
               activeIcon: Icon(Icons.history),
-              label: 'التاريخ',
+              label: 'التاريخ'.tr(context),
             ),
           ],
           
